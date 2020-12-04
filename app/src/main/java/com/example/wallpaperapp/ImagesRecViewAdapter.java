@@ -84,7 +84,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         private ImageView image;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            path = itemView.findViewById(R.id.txtPathItem);
+            path = itemView.findViewById(R.id.txtNameItem);
             parentLayout = itemView.findViewById(R.id.parentLayout);
             image = itemView.findViewById(R.id.imgViewItem);
         }

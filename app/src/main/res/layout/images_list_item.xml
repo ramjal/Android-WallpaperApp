@@ -14,11 +14,11 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/txtPathItem"
+            android:id="@+id/txtNameItem"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:text="Path"
+            android:text="Name"
             android:textStyle="bold"
             android:layout_marginTop="7dp"/>
 
@@ -26,7 +26,7 @@
             android:id="@+id/imgViewItem"
             android:layout_width="140dp"
             android:layout_height="140dp"
-            android:layout_below="@id/txtPathItem"
+            android:layout_below="@id/txtNameItem"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="10dp"
             android:src="@drawable/ic_launcher_background"

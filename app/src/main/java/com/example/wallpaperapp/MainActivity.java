@@ -2,11 +2,13 @@ package com.example.wallpaperapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
@@ -45,8 +47,13 @@ public class MainActivity extends AppCompatActivity {
         recAdapter = new ImagesRecViewAdapter(this);
         recAdapter.setImages(getImageList());
         recviewImageList.setAdapter(recAdapter);
-        //recviewImageList.setLayoutManager(new LinearLayoutManager(this));
-        recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            recviewImageList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        } else {
+            recviewImageList.setLayoutManager(new LinearLayoutManager(this));
+        }
+
+        //recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
     }
 
     public void btnAddImageClicked(View view) {
