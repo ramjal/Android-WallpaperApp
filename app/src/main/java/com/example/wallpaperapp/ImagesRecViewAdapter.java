@@ -24,7 +24,7 @@ import static android.app.WallpaperManager.FLAG_LOCK;
 
 public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdapter.ViewHolder> {
 
-    private ArrayList<ImageModel> imagesList = new ArrayList<>();
+    private static ArrayList<ImageModel> imagesList = new ArrayList<>();
     private Context mainContext;
 
     public ImagesRecViewAdapter(Context context) {
@@ -41,7 +41,6 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.path.setText(imagesList.get(position).getName());
         Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(position).getFile().getAbsolutePath());
         holder.image.setImageBitmap(imgBitmap);
         //holder.parentLayout.setOnClickListener(new View.OnClickListener() {
@@ -73,18 +72,20 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         return imagesList.size();
     }
 
-    public void setImages(ArrayList<ImageModel> imgList) {
+    public void setImagesList(ArrayList<ImageModel> imgList) {
         imagesList = imgList;
         notifyDataSetChanged();
     }
 
+    public static ArrayList<ImageModel> getImagesList() {
+        return imagesList;
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView path;
         private CardView parentLayout;
         private ImageView image;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            path = itemView.findViewById(R.id.txtNameItem);
             parentLayout = itemView.findViewById(R.id.parentLayout);
             image = itemView.findViewById(R.id.imgViewItem);
         }

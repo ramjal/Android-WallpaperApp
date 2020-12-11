@@ -1,26 +1,26 @@
 package com.example.wallpaperapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.res.Configuration;
-import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.Toast;
+import android.widget.ToggleButton;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,28 +32,39 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = "StoreImageExternal";
     private static final String DIR_NAME = "WallPaper";
     private static final int MY_REQEST_CODE = 1234;
+    public static final int PRIVATE_REQUEST_ID = 11;
 
-    RecyclerView recviewImageList;
-    OutputStream outputStream;
-    ImagesRecViewAdapter recAdapter;
-    ArrayList<String> imageList;
-
+    private ToggleButton btnStartStop;
+    private RecyclerView recviewImageList;
+    private OutputStream outputStream;
+    private ImagesRecViewAdapter recAdapter;
+    private AlarmManager alarmManager;
+    private Intent alarmIntent;
+    private PendingIntent alarmPendingIntent;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         recviewImageList = findViewById(R.id.recviewImageList);
+        btnStartStop = findViewById(R.id.btnStartStop);
+
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmIntent = new Intent(this, AlarmReceiver.class);
+        checkToggleButton();
+        
         recAdapter = new ImagesRecViewAdapter(this);
-        recAdapter.setImages(getImageList());
+        recAdapter.setImagesList(getImageList());
         recviewImageList.setAdapter(recAdapter);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             recviewImageList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         } else {
             recviewImageList.setLayoutManager(new LinearLayoutManager(this));
         }
-
         //recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
+
+        btnStartStop.setOnCheckedChangeListener(new btnStartStopChanged());
     }
 
     public void btnAddImageClicked(View view) {
@@ -93,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
             outputStream.flush();
             outputStream.close();
-            recAdapter.setImages(getImageList());
+            recAdapter.setImagesList(getImageList());
             Toast.makeText(this, "Image Saved to " + dir.getName(), Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -126,6 +137,39 @@ public class MainActivity extends AppCompatActivity {
             Log.e(LOG_TAG, "Directory not created");
         }
         return file;
+    }
+
+    private void checkToggleButton() {
+
+        if (alarmIntent == null) return;
+
+        PendingIntent pi = PendingIntent.getBroadcast(this,
+                PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_NO_CREATE);
+
+        btnStartStop.setChecked(pi != null);
+    }
+
+    class btnStartStopChanged implements CompoundButton.OnCheckedChangeListener {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            long repeatInterval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+            long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
+
+            if (isChecked) {
+                alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,
+                        PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                if (alarmManager != null && alarmPendingIntent != null) {
+                    alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                            triggerTime, repeatInterval, alarmPendingIntent);
+                    Toast.makeText(MainActivity.this, "Alarm is On", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                if (alarmManager != null && alarmPendingIntent != null) {
+                    alarmManager.cancel(alarmPendingIntent);
+                    Toast.makeText(MainActivity.this, "Alarm is Off!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
     }
 
 }

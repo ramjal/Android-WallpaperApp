@@ -8,6 +8,16 @@
     tools:context=".MainActivity"
     android:padding="10dp">
 
+    <ToggleButton
+        android:id="@+id/btnStartStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:textOff="Alarm is Stopped!"
+        android:textOn="Alarm is Running!" />
+
     <Button
         android:id="@+id/btnAddImage"
         android:layout_width="wrap_content"
