@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Wallpaper</string>
+    <string-array name="IntervalList">
+        <item>Ramin</item>
+        <item>Shahin</item>
+        <item>Hassan</item>
+        <item>Mohsen</item>
+        <item>Kamaran</item>
+        <item>Gholam</item>
+    </string-array>
 </resources>

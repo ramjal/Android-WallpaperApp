@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
     class btnStartStopChanged implements CompoundButton.OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            long repeatInterval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+            long repeatInterval = 2*60*1000;//AlarmManager.INTERVAL_FIFTEEN_MINUTES;
             long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
 
             if (isChecked) {

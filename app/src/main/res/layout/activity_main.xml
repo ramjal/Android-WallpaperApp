@@ -8,13 +8,24 @@
     tools:context=".MainActivity"
     android:padding="10dp">
 
+    <Spinner
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:id="@+id/spinInerval"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:paddingVertical="6dp"
+        android:paddingHorizontal="16dp"
+        android:entries="@array/IntervalList" />
+
+
     <ToggleButton
         android:id="@+id/btnStartStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingHorizontal="20dp"
         android:layout_gravity="center"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="8dp"
         android:textOff="Alarm is Stopped!"
         android:textOn="Alarm is Running!" />
 
@@ -33,5 +44,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="32dp"
         android:id="@+id/recviewImageList" />
+
+
 
 </LinearLayout>
