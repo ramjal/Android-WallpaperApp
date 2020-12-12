@@ -26,8 +26,8 @@
         android:paddingHorizontal="20dp"
         android:layout_gravity="center"
         android:layout_marginTop="8dp"
-        android:textOff="Alarm is Stopped!"
-        android:textOn="Alarm is Running!" />
+        android:textOff="Click me to Start!"
+        android:textOn="Click me to Stop!" />
 
     <Button
         android:id="@+id/btnAddImage"
