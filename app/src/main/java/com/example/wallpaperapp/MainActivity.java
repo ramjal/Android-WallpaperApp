@@ -115,7 +115,9 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<ImageModel> getImageList() {
         ArrayList<ImageModel> imageList = new ArrayList<>();
-        File dir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), DIR_NAME);
+        //File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), DIR_NAME);
+        //File dir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath());
+        File dir = getAppSpecificPictureStorageDir();
         if (dir.exists()) {
             File[] allFiles = dir.listFiles();
             if (allFiles.length == 0) {
@@ -132,11 +134,12 @@ public class MainActivity extends AppCompatActivity {
     @Nullable
     private File getAppSpecificPictureStorageDir() {
         // Get the pictures directory that's inside the app-specific directory on external storage
-        File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), DIR_NAME);
-        if (file == null || !file.mkdirs()) {
+        //File dir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), DIR_NAME);
+        File dir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath());
+        if (dir == null || !dir.mkdirs()) {
             Log.e(LOG_TAG, "Directory not created");
         }
-        return file;
+        return dir;
     }
 
     private void checkToggleButton() {

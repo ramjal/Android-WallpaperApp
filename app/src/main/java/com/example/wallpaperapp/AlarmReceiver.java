@@ -30,23 +30,23 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void setWallpaper(Context context) {
-        String time = new SimpleDateFormat("HH:mm").format(new Date());
         ArrayList<ImageModel> imagesList = ImagesRecViewAdapter.getImagesList();
         if (imagesList == null || imagesList.size() == 0) {
             Log.e("AlarmReceiver", "Image list is empty!");
             return;
         }
 
+        String time = new SimpleDateFormat("HH:mm").format(new Date());
         //Get a random index of the image list
         int index = new Random().nextInt(imagesList.size());
-        Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(index).getFile().getAbsolutePath());
         String message = String.format("Wallpaper set with image index=%d at %s", index, time);
         WallpaperManager myWallpaperManager = WallpaperManager.getInstance(context);
         try {
+            Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(index).getFile().getAbsolutePath());
             if (myWallpaperManager.setBitmap(imgBitmap, null, false, FLAG_LOCK) > 0) {
                 Log.i("AlarmReceiver", message);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e("AlarmReceiver", e.getMessage());
             e.printStackTrace();
         }
