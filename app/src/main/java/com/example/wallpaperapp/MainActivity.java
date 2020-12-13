@@ -13,7 +13,10 @@ import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -27,36 +30,52 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String LOG_TAG = "wallpaperapp";
     private static final int MY_REQEST_CODE = 1234;
     private static final int PRIVATE_REQUEST_ID = 11;
 
+    private Spinner spnInerval;
     private ToggleButton btnStartStop;
     private RecyclerView recviewImageList;
     private OutputStream outputStream;
-    private ImagesRecViewAdapter recAdapter;
+    private ImagesRecViewAdapter recviewAdapter;
     private AlarmManager alarmManager;
     private Intent alarmIntent;
     private PendingIntent alarmPendingIntent;
     private String imagePath;
+    private HashMap<String, Integer> intervalMap;
+    private Integer selectedIntervalMinute;
+    private List<String> intervalsText;
+    private List<Integer> intervalsNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        selectedIntervalMinute = 1;
+
+        //Set internal variables for Views
+        spnInerval = findViewById(R.id.spnInerval);
         recviewImageList = findViewById(R.id.recviewImageList);
         btnStartStop = findViewById(R.id.btnStartStop);
+
+        //Set event handlers
+        spnInerval.setOnItemSelectedListener(new spnInervalOnItemSelected());
         btnStartStop.setOnCheckedChangeListener(new btnStartStopChanged());
-        // Get the pictures directory that's inside the app-specific directory on external storage
+
+        //Get the pictures directory that's inside the app-specific directory on external storage
         imagePath = getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
 
         ArrayList<ImageModel> imagesList = getImagesList();
-        recAdapter = new ImagesRecViewAdapter(this);
-        recAdapter.setImagesList(imagesList);
-        recviewImageList.setAdapter(recAdapter);
+        recviewAdapter = new ImagesRecViewAdapter(this);
+        recviewAdapter.setImagesList(imagesList);
+        recviewImageList.setAdapter(recviewAdapter);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             recviewImageList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -68,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmIntent = new Intent(this, AlarmReceiver.class);
         alarmIntent.putExtra("ImagesNameArray", getImagesNameArray(imagesList));
+        setSpinnerData();
         checkToggleButton();
     }
 
@@ -107,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
 
             outputStream.flush();
             outputStream.close();
-            recAdapter.setImagesList(getImagesList());
+            recviewAdapter.setImagesList(getImagesList());
             Toast.makeText(this, "Image Saved to " + dir.getName(), Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -167,10 +187,20 @@ public class MainActivity extends AppCompatActivity {
         btnStartStop.setChecked(pi != null);
     }
 
+    private void setSpinnerData() {
+        intervalsText = Arrays.asList("hour", "2 hours", "6 hours", "12 hours", "day", "week");
+        intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24*7);
+
+        ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_dropdown_item, intervalsText);
+        spnInerval.setAdapter(intervalAdapter);
+    }
+
+    //btnStartStopChanged event handler
     class btnStartStopChanged implements CompoundButton.OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            long repeatInterval = 5*60*1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+            long repeatInterval = selectedIntervalMinute * 60 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
             long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
 
             if (isChecked) {
@@ -187,6 +217,21 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Alarm is Off!", Toast.LENGTH_SHORT).show();
                 }
             }
+        }
+    }
+
+    //spinnerInerval OnItemSelected event handler
+    class spnInervalOnItemSelected implements AdapterView.OnItemSelectedListener {
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            selectedIntervalMinute = intervalsNumber.get(position) * 60;
+            //Toast.makeText(MainActivity.this, "Selected: " + selectedIntervalMinute, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+
         }
     }
 
