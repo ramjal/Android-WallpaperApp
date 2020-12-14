@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,16 +43,25 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(position).getFile().getAbsolutePath());
-        holder.image.setImageBitmap(imgBitmap);
+        holder.imageViewItem.setImageBitmap(imgBitmap);
         //holder.parentLayout.setOnClickListener(new View.OnClickListener() {
-        holder.image.setOnClickListener(new View.OnClickListener() {
+        holder.imageViewItem.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View v) {
-                Toast.makeText(mainContext, imagesList.get(position).getName() + " Selected", Toast.LENGTH_SHORT).show();
                 setWallPaper(imgBitmap);
+                //Toast.makeText(mainContext, imagesList.get(position).getName() + " Selected", Toast.LENGTH_SHORT).show();
             }
         });
+
+        holder.imageViewItem.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(mainContext, imagesList.get(position).getName() + " Long Pressed!", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -83,11 +93,11 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private CardView parentLayout;
-        private ImageView image;
+        private ImageView imageViewItem;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             parentLayout = itemView.findViewById(R.id.parentLayout);
-            image = itemView.findViewById(R.id.imgViewItem);
+            imageViewItem = itemView.findViewById(R.id.imgViewItem);
         }
     }
 }

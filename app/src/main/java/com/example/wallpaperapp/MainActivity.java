@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String LOG_TAG = "wallpaperapp";
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int MY_REQEST_CODE = 1234;
     private static final int PRIVATE_REQUEST_ID = 11;
 
@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private Integer selectedIntervalMinute;
     private List<String> intervalsText;
     private List<Integer> intervalsNumber;
+    private boolean isAlarmAlreadySet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
 
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmIntent = new Intent(this, AlarmReceiver.class);
-        alarmIntent.putExtra("ImagesNameArray", getImagesNameArray(imagesList));
         setSpinnerData();
         checkToggleButton();
     }
@@ -184,7 +184,13 @@ public class MainActivity extends AppCompatActivity {
         PendingIntent pi = PendingIntent.getBroadcast(this,
                 PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_NO_CREATE);
 
-        btnStartStop.setChecked(pi != null);
+        if (pi != null) {
+            //Integer testInt = alarmIntent.getIntExtra("IntervalHours", 0);
+            isAlarmAlreadySet = true;
+        } else {
+            isAlarmAlreadySet = false;
+        }
+        btnStartStop.setChecked(isAlarmAlreadySet);
     }
 
     private void setSpinnerData() {
@@ -196,26 +202,40 @@ public class MainActivity extends AppCompatActivity {
         spnInerval.setAdapter(intervalAdapter);
     }
 
+    private void startAlarm() {
+        if (isAlarmAlreadySet) return;
+        long repeatInterval = selectedIntervalMinute * 60 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+        long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
+        Integer hours = selectedIntervalMinute / 60;
+        alarmIntent.putExtra("ImagesNameArray", getImagesNameArray(getImagesList()));
+        alarmIntent.putExtra("IntervalHours", hours);
+        alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,
+                PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        if (alarmManager != null && alarmPendingIntent != null) {
+            alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    triggerTime, repeatInterval, alarmPendingIntent);
+            Toast.makeText(MainActivity.this, "Alarm is On", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void stopAlarm() {
+        if (alarmManager != null && alarmPendingIntent != null) {
+            alarmManager.cancel(alarmPendingIntent);
+            alarmPendingIntent.cancel();
+            Toast.makeText(MainActivity.this, "Alarm is Off!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    //region Event Handlers
+
     //btnStartStopChanged event handler
     class btnStartStopChanged implements CompoundButton.OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            long repeatInterval = selectedIntervalMinute * 60 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
-            long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
-
             if (isChecked) {
-                alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,
-                        PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                if (alarmManager != null && alarmPendingIntent != null) {
-                    alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                            triggerTime, repeatInterval, alarmPendingIntent);
-                    Toast.makeText(MainActivity.this, "Alarm is On", Toast.LENGTH_SHORT).show();
-                }
+                startAlarm();
             } else {
-                if (alarmManager != null && alarmPendingIntent != null) {
-                    alarmManager.cancel(alarmPendingIntent);
-                    Toast.makeText(MainActivity.this, "Alarm is Off!", Toast.LENGTH_SHORT).show();
-                }
+                stopAlarm();
             }
         }
     }
@@ -234,5 +254,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+    //endregion
 
 }

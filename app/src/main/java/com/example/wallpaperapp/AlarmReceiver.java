@@ -21,6 +21,7 @@ import java.util.Random;
 import static android.app.WallpaperManager.FLAG_LOCK;
 
 public class AlarmReceiver extends BroadcastReceiver {
+    private static final String LOG_TAG = AlarmReceiver.class.getSimpleName();
     String[] imagesNameList;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -33,7 +34,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void setWallpaper(Context context) {
         if (imagesNameList == null || imagesNameList.length == 0) {
-            Log.e(MainActivity.LOG_TAG, "Image list is empty!");
+            Log.e(LOG_TAG, "Image list is empty!");
             return;
         }
         String time = new SimpleDateFormat("HH:mm").format(new Date());
@@ -44,10 +45,10 @@ public class AlarmReceiver extends BroadcastReceiver {
         try {
             Bitmap imgBitmap = BitmapFactory.decodeFile(imagesNameList[index]);
             if (myWallpaperManager.setBitmap(imgBitmap, null, false, FLAG_LOCK) > 0) {
-                Log.i(MainActivity.LOG_TAG, message);
+                Log.i(LOG_TAG, message);
             }
         } catch (Exception e) {
-            Log.e(MainActivity.LOG_TAG, e.getMessage());
+            Log.e(LOG_TAG, e.getMessage());
             e.printStackTrace();
         }
     }
