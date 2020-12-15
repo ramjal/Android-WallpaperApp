@@ -27,7 +27,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onReceive(Context context, Intent intent) {
-        imagesNameList = intent.getStringArrayExtra("ImagesNameArray");
+        imagesNameList = intent.getStringArrayExtra(MainActivity.IMAGE_ARRAY_KEY);
         setWallpaper(context);
     }
 

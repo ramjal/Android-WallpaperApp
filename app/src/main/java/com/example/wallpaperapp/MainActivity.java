@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -38,6 +39,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int MY_REQEST_CODE = 1234;
     private static final int PRIVATE_REQUEST_ID = 11;
+    private static final String INTERVAL_HOURS_KEY = "interval_hours";
+    public static final String IMAGE_ARRAY_KEY = "images_name_array";
+
+    private SharedPreferences mPreferences;
+    private String sharedPrefFile = "com.example.wallpaperapp";
 
     private Spinner spnInerval;
     private ToggleButton btnStartStop;
@@ -49,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private PendingIntent alarmPendingIntent;
     private String imagePath;
     private HashMap<String, Integer> intervalMap;
-    private Integer selectedIntervalMinute;
+    private Integer selectedIntervalHour;
     private List<String> intervalsText;
     private List<Integer> intervalsNumber;
     private boolean isAlarmAlreadySet;
@@ -59,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        selectedIntervalMinute = 1;
+        selectedIntervalHour = 1;
 
         //Set internal variables for Views
         spnInerval = findViewById(R.id.spnInerval);
@@ -72,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
 
         //Get the pictures directory that's inside the app-specific directory on external storage
         imagePath = getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+
+        //Get the shared preferences for reading app saved data
+        mPreferences = getSharedPreferences(sharedPrefFile, MODE_PRIVATE);
 
         ArrayList<ImageModel> imagesList = getImagesList();
         recviewAdapter = new ImagesRecViewAdapter(this);
@@ -89,6 +98,16 @@ public class MainActivity extends AppCompatActivity {
         alarmIntent = new Intent(this, AlarmReceiver.class);
         setSpinnerData();
         checkToggleButton();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        //Create shared editor object an save the needed data
+        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
+        preferencesEditor.putInt(IMAGE_ARRAY_KEY, selectedIntervalHour);
+        preferencesEditor.apply();
     }
 
     public void btnAddImageClicked(View view) {
@@ -181,12 +200,14 @@ public class MainActivity extends AppCompatActivity {
     private void checkToggleButton() {
         if (alarmIntent == null) return;
 
-        PendingIntent pi = PendingIntent.getBroadcast(this,
+        alarmPendingIntent = PendingIntent.getBroadcast(this,
                 PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_NO_CREATE);
 
-        if (pi != null) {
-            //Integer testInt = alarmIntent.getIntExtra("IntervalHours", 0);
+        if (alarmPendingIntent != null) {
             isAlarmAlreadySet = true;
+            selectedIntervalHour = mPreferences.getInt(IMAGE_ARRAY_KEY, 1);
+            Integer position = intervalsNumber.indexOf(selectedIntervalHour);
+            spnInerval.setSelection(position);
         } else {
             isAlarmAlreadySet = false;
         }
@@ -206,11 +227,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void startAlarm() {
         if (isAlarmAlreadySet) return;
-        long repeatInterval = selectedIntervalMinute * 60 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+        long repeatInterval = selectedIntervalHour * 3600 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
-        Integer hours = selectedIntervalMinute / 60;
-        alarmIntent.putExtra("ImagesNameArray", getImagesNameArray(getImagesList()));
-        alarmIntent.putExtra("IntervalHours", hours);
+        alarmIntent.putExtra(IMAGE_ARRAY_KEY , getImagesNameArray(getImagesList()));
         alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,
                 PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (alarmManager != null && alarmPendingIntent != null) {
@@ -247,14 +266,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            selectedIntervalMinute = intervalsNumber.get(position) * 60;
-            //Toast.makeText(MainActivity.this, "Selected: " + selectedIntervalMinute, Toast.LENGTH_SHORT).show();
+            selectedIntervalHour = intervalsNumber.get(position);
         }
 
         @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-
-        }
+        public void onNothingSelected(AdapterView<?> parent) {}
     }
 
     //endregion
