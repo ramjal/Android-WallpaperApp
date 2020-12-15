@@ -194,11 +194,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setSpinnerData() {
-        intervalsText = Arrays.asList("hour", "2 hours", "6 hours", "12 hours", "day", "week");
+        intervalsText = Arrays.asList("1 hour", "2 hours", "6 hours", "12 hours", "day", "week");
         intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24*7);
 
         ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_dropdown_item, intervalsText);
+                //this, android.R.layout.simple_selectable_list_item, intervalsText);
+
         spnInerval.setAdapter(intervalAdapter);
     }
 
