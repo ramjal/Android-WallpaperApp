@@ -19,7 +19,7 @@
             android:layout_height="140dp"
             android:layout_centerHorizontal="true"
             android:src="@drawable/ic_launcher_background"
-            android:scaleType="fitXY"/>
+            android:scaleType="fitCenter"/>
 
     </RelativeLayout>
 
