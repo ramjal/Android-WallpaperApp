@@ -219,8 +219,13 @@ public class MainActivity extends AppCompatActivity {
         intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24*7);
 
         ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_dropdown_item, intervalsText);
-                //this, android.R.layout.simple_selectable_list_item, intervalsText);
+                                    this, R.layout.spinner_item, intervalsText);
+
+//        ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
+//                this, android.R.layout.simple_spinner_dropdown_item, intervalsText);
+                                             //simple_spinner_item
+                                             //simple_dropdown_item_1line
+                                             //simple_selectable_list_item
 
         spnInerval.setAdapter(intervalAdapter);
     }
