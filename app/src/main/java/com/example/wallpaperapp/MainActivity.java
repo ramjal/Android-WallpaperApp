@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -41,11 +42,13 @@ public class MainActivity extends AppCompatActivity {
     private static final int PRIVATE_REQUEST_ID = 11;
     private static final String INTERVAL_HOURS_KEY = "interval_hours";
     public static final String IMAGE_ARRAY_KEY = "images_name_array";
+    public static final String IMAGE_INDEX = "images_index";
 
     private SharedPreferences mPreferences;
-    private String sharedPrefFile = "com.example.wallpaperapp";
+    private String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
 
     private Spinner spnInerval;
+    private TextView txtIndex;
     private ToggleButton btnStartStop;
     private RecyclerView recviewImageList;
     private OutputStream outputStream;
@@ -53,9 +56,10 @@ public class MainActivity extends AppCompatActivity {
     private AlarmManager alarmManager;
     private Intent alarmIntent;
     private PendingIntent alarmPendingIntent;
-    private String imagePath;
+    private String appImagesPath;
     private HashMap<String, Integer> intervalMap;
-    private Integer selectedIntervalHour;
+    private int selectedIntervalHour;
+    private int pictureIndex;
     private List<String> intervalsText;
     private List<Integer> intervalsNumber;
     private boolean isAlarmAlreadySet;
@@ -66,8 +70,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         selectedIntervalHour = 1;
+        pictureIndex = 0;
 
         //Set internal variables for Views
+        txtIndex = findViewById(R.id.txtIndex);
         spnInerval = findViewById(R.id.spnInerval);
         recviewImageList = findViewById(R.id.recviewImageList);
         btnStartStop = findViewById(R.id.btnStartStop);
@@ -77,10 +83,10 @@ public class MainActivity extends AppCompatActivity {
         btnStartStop.setOnCheckedChangeListener(new btnStartStopChanged());
 
         //Get the pictures directory that's inside the app-specific directory on external storage
-        imagePath = getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+        appImagesPath = getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
 
         //Get the shared preferences for reading app saved data
-        mPreferences = getSharedPreferences(sharedPrefFile, MODE_PRIVATE);
+        mPreferences = getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
 
         ArrayList<ImageModel> imagesList = getImagesList();
         recviewAdapter = new ImagesRecViewAdapter(this);
@@ -104,10 +110,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
-        //Create shared editor object an save the needed data
-        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
-        preferencesEditor.putInt(IMAGE_ARRAY_KEY, selectedIntervalHour);
-        preferencesEditor.apply();
+        SaveSharedData();
+//
+//        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
+//        preferencesEditor.putInt(IMAGE_ARRAY_KEY, selectedIntervalHour);
+//        //preferencesEditor.putInt(IMAGE_INDEX, pictureIndex);
+//
+//        preferencesEditor.apply();
     }
 
     public void btnAddImageClicked(View view) {
@@ -128,6 +137,13 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    //Create shared object and save the needed data
+    private void SaveSharedData() {
+        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
+        preferencesEditor.putInt(IMAGE_ARRAY_KEY, selectedIntervalHour);
+        preferencesEditor.apply();
     }
 
     private void addImageFileToAppStorage(Uri uri) {
@@ -181,18 +197,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Nullable
     private File getAppSpecificPictureStorageDir() {
-        if(imagePath == null || imagePath.trim().isEmpty()) {
-            Log.e(LOG_TAG, "imagePath is null or empty");
+        if(appImagesPath == null || appImagesPath.trim().isEmpty()) {
+            Log.e(LOG_TAG, "appImagesPath is null or empty");
             return null;
         }
 
-        File dir = new File(imagePath);
+        File dir = new File(appImagesPath);
         if (dir != null && dir.exists()) {
-            Log.i(LOG_TAG, String.format("Directory already exists - %s", imagePath));
+            Log.i(LOG_TAG, String.format("Directory already exists - %s", appImagesPath));
         } else if (!dir.mkdirs()) {
-            Log.e(LOG_TAG, String.format("File.mkdirs() returns false - %s", imagePath));
+            Log.e(LOG_TAG, String.format("File.mkdirs() returns false - %s", appImagesPath));
         } else {
-            Log.i(LOG_TAG, String.format("New directory created - %s", imagePath));
+            Log.i(LOG_TAG, String.format("New directory created - %s", appImagesPath));
         }
         return dir;
     }
@@ -206,6 +222,9 @@ public class MainActivity extends AppCompatActivity {
         if (alarmPendingIntent != null) {
             isAlarmAlreadySet = true;
             selectedIntervalHour = mPreferences.getInt(IMAGE_ARRAY_KEY, 1);
+            pictureIndex = mPreferences.getInt(IMAGE_INDEX, 0);
+            txtIndex.setText(String.valueOf(pictureIndex));
+
             Integer position = intervalsNumber.indexOf(selectedIntervalHour);
             spnInerval.setSelection(position);
         } else {
@@ -232,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startAlarm() {
         if (isAlarmAlreadySet) return;
-        long repeatInterval = selectedIntervalHour * 3600 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+        long repeatInterval = 5000;//selectedIntervalHour * 3600 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
         alarmIntent.putExtra(IMAGE_ARRAY_KEY , getImagesNameArray(getImagesList()));
         alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,
