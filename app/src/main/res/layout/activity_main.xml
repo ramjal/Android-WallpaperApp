@@ -13,19 +13,29 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_begin="175dp" />
+        app:layout_constraintGuide_begin="215dp" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="sans-serif"
-        android:text="@string/spinner_label"
-        android:textColor="@color/black"
-        android:textSize="16sp"
+        android:text="Set every"
+        android:textColor="?android:attr/textColorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toStartOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="parent" />
+    <!--    -->
+<!--    <TextView-->
+<!--        android:id="@+id/textView"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:fontFamily="sans-serif"-->
+<!--        android:text="@string/spinner_label"-->
+<!--        android:textColor="@color/black"-->
+<!--        android:textSize="16sp"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/guideline2"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/guideline"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
     <Spinner
         android:id="@+id/spnInerval"
@@ -37,24 +47,21 @@
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/btnStartStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintBottom_toBottomOf="@+id/textLabel"
+        app:layout_constraintEnd_toStartOf="@+id/textLabel"
+        app:layout_constraintTop_toTopOf="@+id/textLabel" />
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_begin="60dp" />
-
-    <ToggleButton
-        android:id="@+id/btnStartStop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:paddingHorizontal="20dp"
-        android:textOff="@string/button_start_text"
-        android:textOn="@string/button_stop_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline2" />
 
     <Button
         android:id="@+id/btnAddImage"
@@ -66,13 +73,15 @@
         android:text="@string/button_addimage_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnStartStop" />
+        app:layout_constraintTop_toTopOf="@+id/guideline2" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recviewImageList"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_height="500dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnAddImage" />
@@ -83,7 +92,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         app:layout_constraintBottom_toBottomOf="@+id/spnInerval"
-        app:layout_constraintEnd_toStartOf="@+id/textView"
+        app:layout_constraintEnd_toStartOf="@+id/btnStartStop"
         app:layout_constraintTop_toTopOf="@+id/spnInerval" />
 
 

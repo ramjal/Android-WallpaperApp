@@ -24,6 +24,7 @@ import android.widget.ToggleButton;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -49,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Spinner spnInerval;
     private TextView txtIndex;
-    private ToggleButton btnStartStop;
+    private TextView textLabel;
+    private SwitchCompat btnStartStop;
     private RecyclerView recviewImageList;
     private OutputStream outputStream;
     private ImagesRecViewAdapter recviewAdapter;
@@ -74,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Set internal variables for Views
         txtIndex = findViewById(R.id.txtIndex);
+        textLabel = findViewById(R.id.textLabel);
         spnInerval = findViewById(R.id.spnInerval);
         recviewImageList = findViewById(R.id.recviewImageList);
         btnStartStop = findViewById(R.id.btnStartStop);
@@ -227,8 +230,10 @@ public class MainActivity extends AppCompatActivity {
 
             Integer position = intervalsNumber.indexOf(selectedIntervalHour);
             spnInerval.setSelection(position);
+            spnInerval.setEnabled(false);
         } else {
             isAlarmAlreadySet = false;
+            spnInerval.setEnabled(true);
         }
         btnStartStop.setChecked(isAlarmAlreadySet);
     }
@@ -251,7 +256,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void startAlarm() {
         if (isAlarmAlreadySet) return;
-        long repeatInterval = 5000;//selectedIntervalHour * 3600 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+        //long repeatInterval = 5000;
+        long repeatInterval = selectedIntervalHour * 3600 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
         alarmIntent.putExtra(IMAGE_ARRAY_KEY , getImagesNameArray(getImagesList()));
         alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,
@@ -260,6 +266,7 @@ public class MainActivity extends AppCompatActivity {
             alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     triggerTime, repeatInterval, alarmPendingIntent);
             Toast.makeText(MainActivity.this, "Alarm is On", Toast.LENGTH_SHORT).show();
+            spnInerval.setEnabled(false);
         }
     }
 
@@ -268,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
             alarmManager.cancel(alarmPendingIntent);
             alarmPendingIntent.cancel();
             Toast.makeText(MainActivity.this, "Alarm is Off!", Toast.LENGTH_SHORT).show();
+            spnInerval.setEnabled(true);
         }
     }
 
@@ -287,7 +295,6 @@ public class MainActivity extends AppCompatActivity {
 
     //spinnerInerval OnItemSelected event handler
     class spnInervalOnItemSelected implements AdapterView.OnItemSelectedListener {
-
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             selectedIntervalHour = intervalsNumber.get(position);
