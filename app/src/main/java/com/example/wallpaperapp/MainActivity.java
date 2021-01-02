@@ -39,7 +39,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private static final int MY_REQEST_CODE = 1234;
     private static final int PRIVATE_REQUEST_ID = 11;
     private static final String INTERVAL_HOURS_KEY = "interval_hours";
     public static final String IMAGE_ARRAY_KEY = "images_name_array";
@@ -52,13 +51,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtIndex;
     private TextView textLabel;
     private SwitchCompat btnStartStop;
-    private RecyclerView recviewImageList;
-    private OutputStream outputStream;
-    private ImagesRecViewAdapter recviewAdapter;
     private AlarmManager alarmManager;
     private Intent alarmIntent;
     private PendingIntent alarmPendingIntent;
-    private String appImagesPath;
     private HashMap<String, Integer> intervalMap;
     private int selectedIntervalHour;
     private int pictureIndex;
@@ -78,30 +73,14 @@ public class MainActivity extends AppCompatActivity {
         txtIndex = findViewById(R.id.txtIndex);
         textLabel = findViewById(R.id.textLabel);
         spnInerval = findViewById(R.id.spnInerval);
-        recviewImageList = findViewById(R.id.recviewImageList);
         btnStartStop = findViewById(R.id.btnStartStop);
 
         //Set event handlers
         spnInerval.setOnItemSelectedListener(new spnInervalOnItemSelected());
         btnStartStop.setOnCheckedChangeListener(new btnStartStopChanged());
 
-        //Get the pictures directory that's inside the app-specific directory on external storage
-        appImagesPath = getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
-
         //Get the shared preferences for reading app saved data
         mPreferences = getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
-
-        ArrayList<ImageModel> imagesList = getImagesList();
-        recviewAdapter = new ImagesRecViewAdapter(this);
-        recviewAdapter.setImagesList(imagesList);
-        recviewImageList.setAdapter(recviewAdapter);
-
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            recviewImageList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        } else {
-            recviewImageList.setLayoutManager(new LinearLayoutManager(this));
-        }
-        //recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
 
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmIntent = new Intent(this, AlarmReceiver.class);
@@ -122,72 +101,11 @@ public class MainActivity extends AppCompatActivity {
 //        preferencesEditor.apply();
     }
 
-    public void btnAddImageClicked(View view) {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1234);
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MY_REQEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (data != null) {
-                    addImageFileToAppStorage(data.getData());
-                }
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
     //Create shared object and save the needed data
     private void SaveSharedData() {
         SharedPreferences.Editor preferencesEditor = mPreferences.edit();
         preferencesEditor.putInt(IMAGE_ARRAY_KEY, selectedIntervalHour);
         preferencesEditor.apply();
-    }
-
-    private void addImageFileToAppStorage(Uri uri) {
-        try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-
-            File dir = getAppSpecificPictureStorageDir();
-            if (dir == null || !dir.exists()) {
-                Toast.makeText(this, "Cannot find directory: " + dir.getName(), Toast.LENGTH_LONG).show();
-                return;
-            }
-            //Create new instance of a file
-            File file = new File(dir, System.currentTimeMillis() + ".jpg");
-            outputStream = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-
-            outputStream.flush();
-            outputStream.close();
-            recviewAdapter.setImagesList(getImagesList());
-            Toast.makeText(this, "Image Saved to " + dir.getName(), Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            Log.d(LOG_TAG, "Exception in Select Image!");
-            e.printStackTrace();
-        }
-    }
-
-    private ArrayList<ImageModel> getImagesList() {
-        ArrayList<ImageModel> imageList = new ArrayList<>();
-        File dir = getAppSpecificPictureStorageDir();
-        if (dir != null && dir.exists()) {
-            File[] allFiles = dir.listFiles();
-            if (allFiles.length == 0) {
-                Log.e(LOG_TAG, "No file found in " + dir.getAbsolutePath());
-            } else {
-                for (File file : allFiles) {
-                    imageList.add(new ImageModel(file, file.getName()));
-                }
-            }
-        }
-        return imageList;
     }
 
     private String[] getImagesNameArray(ArrayList<ImageModel> imageList) {
@@ -196,24 +114,6 @@ public class MainActivity extends AppCompatActivity {
             array[i] = imageList.get(i).getFile().getAbsolutePath();
         }
         return array;
-    }
-
-    @Nullable
-    private File getAppSpecificPictureStorageDir() {
-        if(appImagesPath == null || appImagesPath.trim().isEmpty()) {
-            Log.e(LOG_TAG, "appImagesPath is null or empty");
-            return null;
-        }
-
-        File dir = new File(appImagesPath);
-        if (dir != null && dir.exists()) {
-            Log.i(LOG_TAG, String.format("Directory already exists - %s", appImagesPath));
-        } else if (!dir.mkdirs()) {
-            Log.e(LOG_TAG, String.format("File.mkdirs() returns false - %s", appImagesPath));
-        } else {
-            Log.i(LOG_TAG, String.format("New directory created - %s", appImagesPath));
-        }
-        return dir;
     }
 
     private void checkToggleButton() {
@@ -244,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
                                     this, R.layout.spinner_item, intervalsText);
-
+//
 //        ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
 //                this, android.R.layout.simple_spinner_dropdown_item, intervalsText);
                                              //simple_spinner_item
@@ -259,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
         //long repeatInterval = 5000;
         long repeatInterval = selectedIntervalHour * 3600 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
-        alarmIntent.putExtra(IMAGE_ARRAY_KEY , getImagesNameArray(getImagesList()));
+        alarmIntent.putExtra(IMAGE_ARRAY_KEY , getImagesNameArray(ImageUtils.getImagesList(this)));
         alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,
                 PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (alarmManager != null && alarmPendingIntent != null) {
@@ -302,6 +202,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {}
+    }
+
+    public void btnImagesClicked(View view) {
+        Intent intent = new Intent(this, PictureActivity.class);
+        startActivity(intent);
     }
 
     //endregion

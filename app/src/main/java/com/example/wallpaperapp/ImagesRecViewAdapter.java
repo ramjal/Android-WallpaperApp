@@ -4,11 +4,15 @@ import android.app.WallpaperManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
+import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.provider.ContactsContract;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,9 +31,12 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
     private static ArrayList<ImageModel> imagesList = new ArrayList<>();
     private Context mainContext;
+    private DisplayMetrics displayMetrics;
+
 
     public ImagesRecViewAdapter(Context context) {
-        this.mainContext = context;
+        mainContext = context;
+        displayMetrics = mainContext.getResources().getDisplayMetrics();
     }
 
     @NonNull
@@ -67,9 +74,23 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void setWallPaper(Bitmap imgBitmap) {
         WallpaperManager myWallpaperManager = WallpaperManager.getInstance(mainContext);
+
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+        int left = Math.max((imgBitmap.getWidth() - width) / 2, 0);
+        int top = Math.max((imgBitmap.getHeight() - height) / 2, 0);
+        int right = imgBitmap.getWidth();
+        int bottom = imgBitmap.getHeight();
+
+        Rect visibleRect = new Rect(80, top, right, bottom);
+        //visibleRect = null;
+
+        //"Wallpaper Set!"
+        String message = String.format("Width = %d, Height = %d\nWidth = %d, Height = %d",
+                width, height, imgBitmap.getWidth(), imgBitmap.getHeight());
         try {
-            if (myWallpaperManager.setBitmap(imgBitmap, null, false, FLAG_LOCK) > 0) {
-                Toast.makeText(mainContext, "Wallpaper Set!", Toast.LENGTH_SHORT).show();
+            if (myWallpaperManager.setBitmap(imgBitmap, visibleRect, false, FLAG_LOCK) > 0) {
+                Toast.makeText(mainContext, message, Toast.LENGTH_SHORT).show();
             }
         } catch (IOException e) {
             Toast.makeText(mainContext, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -98,6 +119,9 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
             super(itemView);
             parentLayout = itemView.findViewById(R.id.parentLayout);
             imageViewItem = itemView.findViewById(R.id.imgViewItem);
+            //Make each image 1/3 of the screen width
+            imageViewItem.getLayoutParams().width = displayMetrics.widthPixels / 3;
+            imageViewItem.getLayoutParams().height = imageViewItem.getLayoutParams().width * displayMetrics.heightPixels / displayMetrics.widthPixels;
         }
     }
 }
