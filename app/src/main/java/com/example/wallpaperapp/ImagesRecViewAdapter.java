@@ -84,12 +84,25 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         int imageHeight = imageBitmap.getHeight();
         int left = 0;
         int top = 0;
-        if (imageWidth > displayHeight) {
+        if (imageWidth > displayWidth) {
             left = (imageWidth - displayWidth) / 2;
+
+            AlertDialog.Builder myAlterDialog = new AlertDialog.Builder(mainContext);
+            myAlterDialog.setTitle("Alert");
+            String message = String.format("displayWidth = %d, displayHeight = %d" +
+                            "\nimageWidth = %d, imageHeight = %d" +
+                            "\nleft = %d",
+                    displayWidth, displayHeight, imageWidth, imageHeight, left);
+
+            myAlterDialog.setMessage(message);
+            myAlterDialog.show();
+
         }
 
         Rect visibleRect = new Rect(left, top, imageWidth, imageHeight);
         //visibleRect = null;
+
+
 
         String message = String.format("displayWidth = %d, displayHeight = %d" +
                         "\nimageWidth = %d, imageHeight = %d" +
