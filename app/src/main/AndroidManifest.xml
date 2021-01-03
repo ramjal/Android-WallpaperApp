@@ -11,7 +11,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WallpaperApp">
-        <activity android:name=".PictureActivity"></activity>
 
         <receiver
             android:name=".AlarmReceiver"
@@ -25,6 +24,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".PictureActivity"
+            android:parentActivityName="com.example.wallpaperapp.MainActivity">
+        </activity>
+
     </application>
 
 </manifest>

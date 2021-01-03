@@ -1,7 +1,9 @@
 package com.example.wallpaperapp;
 
+import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
@@ -22,6 +24,7 @@ import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -64,7 +67,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         holder.imageViewItem.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Toast.makeText(mainContext, imagesList.get(position).getName() + " Long Pressed!", Toast.LENGTH_SHORT).show();
+                handleDelete(position);
                 return true;
             }
         });
@@ -72,30 +75,67 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    private void setWallPaper(Bitmap imgBitmap) {
+    private void setWallPaper(Bitmap imageBitmap) {
         WallpaperManager myWallpaperManager = WallpaperManager.getInstance(mainContext);
 
-        int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;
-        int left = Math.max((imgBitmap.getWidth() - width) / 2, 0);
-        int top = Math.max((imgBitmap.getHeight() - height) / 2, 0);
-        int right = imgBitmap.getWidth();
-        int bottom = imgBitmap.getHeight();
+        int displayWidth = displayMetrics.widthPixels;
+        int displayHeight = displayMetrics.heightPixels;
+        int imageWidth = imageBitmap.getWidth();
+        int imageHeight = imageBitmap.getHeight();
+        int left = 0;
+        int top = 0;
+        if (imageWidth > displayHeight) {
+            left = (imageWidth - displayWidth) / 2;
+        }
 
-        Rect visibleRect = new Rect(80, top, right, bottom);
+        Rect visibleRect = new Rect(left, top, imageWidth, imageHeight);
         //visibleRect = null;
 
+        String message = String.format("displayWidth = %d, displayHeight = %d" +
+                        "\nimageWidth = %d, imageHeight = %d" +
+                        "\nleft = %d",
+                displayWidth, displayHeight, imageWidth, imageHeight, left);
+
         //"Wallpaper Set!"
-        String message = String.format("Width = %d, Height = %d\nWidth = %d, Height = %d",
-                width, height, imgBitmap.getWidth(), imgBitmap.getHeight());
         try {
-            if (myWallpaperManager.setBitmap(imgBitmap, visibleRect, false, FLAG_LOCK) > 0) {
-                Toast.makeText(mainContext, message, Toast.LENGTH_SHORT).show();
+            if (myWallpaperManager.setBitmap(imageBitmap, visibleRect, false, FLAG_LOCK) > 0) {
+                Toast.makeText(mainContext, message, Toast.LENGTH_LONG).show();
             }
         } catch (IOException e) {
             Toast.makeText(mainContext, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
+    }
+
+    private void handleDelete(int position) {
+        //Toast.makeText(mainContext, imagesList.get(position).getName() + " Long Pressed!", Toast.LENGTH_SHORT).show();
+        AlertDialog.Builder myAlterDialog = new AlertDialog.Builder(mainContext);
+        myAlterDialog.setTitle("Alert");
+        myAlterDialog.setMessage("Click OK to continue, or Cancel to stop deleting this image.");
+
+        // Add the dialog buttons.
+        myAlterDialog.setPositiveButton("OK", new
+                DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        File file = imagesList.get(position).getFile();
+                        try {
+                            file.delete();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(mainContext, "!!!Error - Cannot Delete " + imagesList.get(position).getFile().getPath(), Toast.LENGTH_LONG).show();
+                        }
+                        Toast.makeText(mainContext, imagesList.get(position).getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+        myAlterDialog.setNegativeButton("Cancel", new
+                DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(mainContext, imagesList.get(position).getName() + " - Pressed Cancel", Toast.LENGTH_SHORT).show();
+                   }
+                });
+
+        // Create and show the AlertDialog.
+        myAlterDialog.show();
     }
 
     @Override
