@@ -48,8 +48,8 @@ public class PictureActivity extends AppCompatActivity {
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             recviewImageList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         } else {
-            //recviewImageList.setLayoutManager(new LinearLayoutManager(this));
-            recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
+            recviewImageList.setLayoutManager(new LinearLayoutManager(this));
+            //recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
         }
     }
 

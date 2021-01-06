@@ -24,6 +24,8 @@ import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,14 +54,19 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(position).getFile().getAbsolutePath());
-        holder.imageViewItem.setImageBitmap(imgBitmap);
-        //holder.parentLayout.setOnClickListener(new View.OnClickListener() {
+//        Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(position).getFile().getAbsolutePath());
+//        holder.imageViewItem.setImageBitmap(imgBitmap);
+
+        Glide.with(mainContext)
+                .load(imagesList.get(position).getFile().getAbsolutePath())
+                .centerCrop()
+                .into(holder.imageViewItem);
+
         holder.imageViewItem.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View v) {
-                setWallPaper(imgBitmap);
+                //setWallPaper(imgBitmap);
                 //Toast.makeText(mainContext, imagesList.get(position).getName() + " Selected", Toast.LENGTH_SHORT).show();
             }
         });
@@ -84,30 +91,27 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         int imageHeight = imageBitmap.getHeight();
         int left = 0;
         int top = 0;
+        int right = imageWidth;
+        int bottom = imageHeight;
         if (imageWidth > displayWidth) {
             left = (imageWidth - displayWidth) / 2;
-
-            AlertDialog.Builder myAlterDialog = new AlertDialog.Builder(mainContext);
-            myAlterDialog.setTitle("Alert");
-            String message = String.format("displayWidth = %d, displayHeight = %d" +
-                            "\nimageWidth = %d, imageHeight = %d" +
-                            "\nleft = %d",
-                    displayWidth, displayHeight, imageWidth, imageHeight, left);
-
-            myAlterDialog.setMessage(message);
-            myAlterDialog.show();
-
+            right = left + imageWidth;
         }
 
-        Rect visibleRect = new Rect(left, top, imageWidth, imageHeight);
+        int dw = myWallpaperManager.getDesiredMinimumWidth();
+        int dh = myWallpaperManager.getDesiredMinimumHeight();
+
+        Rect visibleRect = new Rect(left, top, right, bottom);
         //visibleRect = null;
 
+
+       // https://stackoverflow.com/questions/7383361/android-wallpapermanager-crops-image
 
 
         String message = String.format("displayWidth = %d, displayHeight = %d" +
                         "\nimageWidth = %d, imageHeight = %d" +
-                        "\nleft = %d",
-                displayWidth, displayHeight, imageWidth, imageHeight, left);
+                        "\nleft = %d, right = %d",
+                displayWidth, displayHeight, imageWidth, imageHeight, left, right);
 
         //"Wallpaper Set!"
         try {
