@@ -6,6 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".PictureEditActivity">
 
+<!--
+android:windowTranslucentNavigation="true"
+   android:fitsSystemWindows="true"
+    android:windowTranslucentStatus="false"
+    android:windowTranslucentNavigation="false"
+   -->
+
     <ImageView
         android:id="@+id/imgViewEdit"
         android:layout_width="match_parent"

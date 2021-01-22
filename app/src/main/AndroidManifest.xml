@@ -27,13 +27,11 @@
         <activity
             android:name=".PictureActivity"
             android:parentActivityName=".MainActivity">
+            <!-- android:theme="@style/Theme.TranslucentBars" -->
         </activity>
         <activity
             android:name=".PictureEditActivity">
         </activity>
-
-    <!--        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"-->
-    <!--        android:parentActivityName=".PictureActivity">-->
 
     </application>
 
