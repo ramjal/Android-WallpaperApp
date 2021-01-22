@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
@@ -66,7 +67,11 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View v) {
-                //setWallPaper(imgBitmap);
+                Intent intent = new Intent(mainContext, PictureEditActivity.class);
+                intent.putExtra("FILE_PATH", imagesList.get(position).getFile().getAbsolutePath());
+                mainContext.startActivity(intent);
+
+                //setWallPaper(imgBitmap); //should fix this - should use an interface and do this inside the activity - look at RecyclerViewExample project
                 //Toast.makeText(mainContext, imagesList.get(position).getName() + " Selected", Toast.LENGTH_SHORT).show();
             }
         });

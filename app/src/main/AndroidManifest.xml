@@ -24,10 +24,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".PictureActivity"
-            android:parentActivityName="com.example.wallpaperapp.MainActivity">
+        <activity
+            android:name=".PictureActivity"
+            android:parentActivityName=".MainActivity">
         </activity>
+        <activity
+            android:name=".PictureEditActivity">
+        </activity>
+
+    <!--        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"-->
+    <!--        android:parentActivityName=".PictureActivity">-->
 
     </application>
 
