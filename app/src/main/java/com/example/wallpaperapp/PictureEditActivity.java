@@ -7,6 +7,8 @@ import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.GestureDetector;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -39,13 +41,33 @@ public class PictureEditActivity extends AppCompatActivity {
         // or add android:theme="@style/Theme.TranslucentBars" in the Manifest file
 
         //removeStatusAndNavBar();
+        clearTitle();
         setUpImageAndGestureDetectors();
     }
 
-    //OK button (check) is clicked
-    public void btnOKClicked(View view) {
-        String message = String.format("x=%f, y=%f, scale=%f", currentX, currentY, currentScale);
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.action_bar_2, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.action_set_2:
+                String message = String.format("x=%f, y=%f, scale=%f", currentX, currentY, currentScale);
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                return true;
+            default:
+                // Do nothing
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     // Add the bitmap to the ImageView and setup the needed TouchListener for the image
@@ -80,6 +102,12 @@ public class PictureEditActivity extends AppCompatActivity {
         }
     }
 
+    //remove the Title from actoin bar
+    private void clearTitle() {
+        getSupportActionBar().setTitle("");
+    }
+
+    //region Inner Classes
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
@@ -134,4 +162,5 @@ public class PictureEditActivity extends AppCompatActivity {
             return true;
         }
     }
+    //endregion
 }

@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_set"
+        android:id="@+id/action_delete"
         android:orderInCategory="100"
         android:title="Delete"
         android:icon="@drawable/ic_action_delete"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_delete"
+        android:id="@+id/action_set"
         android:orderInCategory="100"
         android:title="Delete"
         android:icon="@drawable/ic_action_set"
