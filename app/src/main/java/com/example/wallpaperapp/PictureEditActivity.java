@@ -2,6 +2,7 @@ package com.example.wallpaperapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.res.Resources;
 import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,13 +35,17 @@ public class PictureEditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picture_edit);
 
-        removeStatusAndNavBar();
+        //Either call the removeStatusAndNavBar()
+        // or add android:theme="@style/Theme.TranslucentBars" in the Manifest file
+
+        //removeStatusAndNavBar();
         setUpImageAndGestureDetectors();
     }
 
     //OK button (check) is clicked
     public void btnOKClicked(View view) {
-        Toast.makeText(this, "OK!", Toast.LENGTH_SHORT).show();
+        String message = String.format("x=%f, y=%f, scale=%f", currentX, currentY, currentScale);
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     // Add the bitmap to the ImageView and setup the needed TouchListener for the image
@@ -88,7 +93,6 @@ public class PictureEditActivity extends AppCompatActivity {
     }
 
     private class ScrollListener extends GestureDetector.SimpleOnGestureListener {
-
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             //Log.d(DEBUG_TAG,String.format("onScroll %f, %f", distanceX, distanceY));
@@ -101,12 +105,10 @@ public class PictureEditActivity extends AppCompatActivity {
     }
 
     private class ImageOnTouchListener implements View.OnTouchListener {
-        //@SuppressLint("ClickableViewAccessibility")
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             mScaleGestureDetector.onTouchEvent(event);
             mGestureDetector.onTouchEvent(event);
-
 //            int action = event.getActionMasked();
 //            int x = Math.round(event.getRawX());
 //            int y = Math.round(event.getRawY());

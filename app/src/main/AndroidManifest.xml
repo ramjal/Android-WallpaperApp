@@ -30,7 +30,9 @@
             <!-- android:theme="@style/Theme.TranslucentBars" -->
         </activity>
         <activity
-            android:name=".PictureEditActivity">
+            android:name=".PictureEditActivity"
+            android:theme="@style/Theme.TranslucentBars"
+            android:parentActivityName=".PictureActivity">
         </activity>
 
     </application>
