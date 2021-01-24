@@ -4,19 +4,15 @@ import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Rect;
-import android.hardware.display.DisplayManager;
 import android.os.Build;
-import android.provider.ContactsContract;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,34 +23,37 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import static android.app.WallpaperManager.FLAG_LOCK;
 
-public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdapter.ViewHolder> {
+public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdapter.PictureViewHolder> {
 
     private static ArrayList<ImageModel> imagesList = new ArrayList<>();
     private Context mainContext;
     private DisplayMetrics displayMetrics;
+    private OnPictureClickListener onPictureClickListener;
 
-
-    public ImagesRecViewAdapter(Context context) {
+    public ImagesRecViewAdapter(Context context, OnPictureClickListener onPictureClickListener) {
         mainContext = context;
         displayMetrics = mainContext.getResources().getDisplayMetrics();
+        this.onPictureClickListener = onPictureClickListener;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public PictureViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.images_list_item, parent,false);
-        ViewHolder holder = new ViewHolder(view);
+        PictureViewHolder holder = new PictureViewHolder(view, onPictureClickListener);
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull PictureViewHolder holder, int position) {
 //        Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(position).getFile().getAbsolutePath());
 //        holder.imageViewItem.setImageBitmap(imgBitmap);
 
@@ -63,26 +62,26 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
                 .centerCrop()
                 .into(holder.imageViewItem);
 
-        holder.imageViewItem.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(mainContext, PictureEditActivity.class);
-                intent.putExtra("FILE_PATH", imagesList.get(position).getFile().getAbsolutePath());
-                mainContext.startActivity(intent);
+//        holder.imageViewItem.setOnClickListener(new View.OnClickListener() {
+//            @RequiresApi(api = Build.VERSION_CODES.N)
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(mainContext, PictureEditActivity.class);
+//                intent.putExtra("FILE_PATH", imagesList.get(position).getFile().getAbsolutePath());
+//                mainContext.startActivity(intent);
+//
+//                //setWallPaper(imgBitmap); //should fix this - should use an interface and do this inside the activity - look at RecyclerViewExample project
+//                //Toast.makeText(mainContext, imagesList.get(position).getName() + " Selected", Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
-                //setWallPaper(imgBitmap); //should fix this - should use an interface and do this inside the activity - look at RecyclerViewExample project
-                //Toast.makeText(mainContext, imagesList.get(position).getName() + " Selected", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        holder.imageViewItem.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                handleDelete(position);
-                return true;
-            }
-        });
+//        holder.imageViewItem.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View v) {
+//                handleDelete(position);
+//                return true;
+//            }
+//        });
 
     }
 
@@ -174,16 +173,34 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         return imagesList;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        private CardView parentLayout;
-        private ImageView imageViewItem;
-        public ViewHolder(@NonNull View itemView) {
+    public class PictureViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private final CardView cardView;
+        private final RelativeLayout parentOfImage;
+        private final ImageView imageViewItem;
+        private final OnPictureClickListener onPictureClickListener;
+
+        public PictureViewHolder(@NonNull View itemView, OnPictureClickListener onPictureClickListener) {
             super(itemView);
-            parentLayout = itemView.findViewById(R.id.parentLayout);
+            cardView = itemView.findViewById(R.id.cardView);
+            parentOfImage = itemView.findViewById(R.id.parentOfImage);
             imageViewItem = itemView.findViewById(R.id.imgViewItem);
+            this.onPictureClickListener = onPictureClickListener;
             //Make each image 1/3 of the screen width
             imageViewItem.getLayoutParams().width = displayMetrics.widthPixels / 3;
             imageViewItem.getLayoutParams().height = imageViewItem.getLayoutParams().width * displayMetrics.heightPixels / displayMetrics.widthPixels;
+            //Should implement onClick
+            imageViewItem.setOnClickListener(this);
         }
+
+        //when itemView clicked it calls on OnPictureClickListener.onPictureClick
+        @Override
+        public void onClick(View v) {
+            onPictureClickListener.onPictureClick(getAdapterPosition());
+        }
+    }
+
+    //The activity should implement this listener
+    public interface OnPictureClickListener {
+        void onPictureClick(int position);
     }
 }

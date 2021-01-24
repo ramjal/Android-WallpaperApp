@@ -1,7 +1,6 @@
 package com.example.wallpaperapp;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,9 +21,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 
-public class PictureActivity extends AppCompatActivity {
+public class PictureActivity extends AppCompatActivity implements ImagesRecViewAdapter.OnPictureClickListener {
 
     private static final String LOG_TAG = PictureActivity.class.getSimpleName();
     private static final int MY_REQEST_CODE = 1234;
@@ -40,9 +38,8 @@ public class PictureActivity extends AppCompatActivity {
 
         recviewImageList = findViewById(R.id.recviewImageList);
 
-        ArrayList<ImageModel> imagesList = ImageUtils.getImagesList(this);
-        recviewAdapter = new ImagesRecViewAdapter(this);
-        recviewAdapter.setImagesList(imagesList);
+        recviewAdapter = new ImagesRecViewAdapter(this, this);
+        recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
         recviewImageList.setAdapter(recviewAdapter);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -126,5 +123,11 @@ public class PictureActivity extends AppCompatActivity {
         }
     }
 
-
+    //implemented ImagesRecViewAdapter.OnPictureClickListener
+    @Override
+    public void onPictureClick(int position) {
+        Intent intent = new Intent(this, PictureEditActivity.class);
+        intent.putExtra("FILE_PATH", ImageUtils.getImagesList(this).get(position).getFile().getAbsolutePath());
+        startActivity(intent);
+    }
 }
