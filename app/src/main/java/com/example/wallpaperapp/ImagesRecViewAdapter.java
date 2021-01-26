@@ -189,7 +189,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
             imageViewItem.getLayoutParams().width = displayMetrics.widthPixels / 3;
             imageViewItem.getLayoutParams().height = imageViewItem.getLayoutParams().width * displayMetrics.heightPixels / displayMetrics.widthPixels;
             //Should implement onClick
-            imageViewItem.setOnClickListener(this);
+            itemView.setOnClickListener(this);
         }
 
         //when itemView clicked it calls on OnPictureClickListener.onPictureClick

@@ -21,13 +21,13 @@ import com.bumptech.glide.Glide;
 
 public class PictureEditActivity extends AppCompatActivity {
     private final String DEBUG_TAG = PictureEditActivity.class.getSimpleName();
-    private final Float MIN_SIZE = 0.25F;
+    private final Float MIN_SIZE = 0.5F;
     private final Float MAX_SIZE = 2f;
     private ImageView imgView2Edit;
     private Matrix mMatrix = new Matrix();
-    Float currentScale = 1.3f; //0.75f;
-    Float currentX = -50f;
-    Float currentY = -50f;
+    Float currentScale = 1.5f;
+    Float currentX = 0f;
+    Float currentY = 0f;
     ScaleGestureDetector mScaleGestureDetector;
     GestureDetector mGestureDetector;
 
