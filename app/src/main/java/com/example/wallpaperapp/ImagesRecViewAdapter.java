@@ -85,7 +85,6 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void setWallPaper(Bitmap imageBitmap) {
         WallpaperManager myWallpaperManager = WallpaperManager.getInstance(mainContext);
 
