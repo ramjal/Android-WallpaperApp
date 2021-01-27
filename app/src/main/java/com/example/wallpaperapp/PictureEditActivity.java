@@ -38,6 +38,7 @@ public class PictureEditActivity extends AppCompatActivity {
     private Float currentScale = 1f;
     private Float currentX = 0f;
     private Float currentY = 0f;
+    private float scale = 1f;
     private ScaleGestureDetector mScaleGestureDetector;
     private GestureDetector mGestureDetector;
 
@@ -67,9 +68,6 @@ public class PictureEditActivity extends AppCompatActivity {
                 .load(filePath)
                 .into(imgView2Edit);
 
-
-
-
         mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
         mGestureDetector = new GestureDetector(this, new ScrollListener());
         imgView2Edit.setOnTouchListener(new ImageOnTouchListener());
@@ -85,6 +83,7 @@ public class PictureEditActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.action_bar_2, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -111,7 +110,7 @@ public class PictureEditActivity extends AppCompatActivity {
                 int imageWidth = options.outWidth;
                 int imageHeight = options.outHeight;
 
-                float scale = (rectF.right - rectF.left)/imageWidth;
+                scale = (rectF.right - rectF.left)/imageWidth;
 
                 message = String.format("left=%d, top=%d\nright=%d, bottom=%d\nwidth=%d, height=%d\nscale=%f",
                                         rect.left, rect.top, rect.right, rect.bottom, imageWidth, imageHeight, scale);
@@ -122,6 +121,7 @@ public class PictureEditActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     private void setWallPaper() {
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
@@ -136,10 +136,10 @@ public class PictureEditActivity extends AppCompatActivity {
         int displayHeight = displayMetrics.heightPixels;
         int imageWidth = imageBitmap.getWidth();
         int imageHeight = imageBitmap.getHeight();
-        int left = Math.round(currentX);// * (imageWidth/displayWidth);
-        int top = Math.round(currentY);// * (imageWidth/displayWidth);
-        int right = left + displayWidth;
-        int bottom = top + displayHeight;
+        int left = Math.min(Math.round(currentX / scale), 0);
+        int top = Math.min(Math.round(currentY / scale), 0);
+        int right = Math.round((currentX + displayWidth) / scale);
+        int bottom = Math.round((currentY + displayHeight) / scale );
 
 //        int right = imageWidth;
 //        int bottom = imageHeight;
@@ -151,10 +151,10 @@ public class PictureEditActivity extends AppCompatActivity {
         //int dw = myWallpaperManager.getDesiredMinimumWidth();
         //int dh = myWallpaperManager.getDesiredMinimumHeight();
 
-        left = 0;
-        top = 0;
-        right = 50;
-        bottom = 450;
+        //left = 0;
+        //top = 0;
+        //right = 50;
+        //bottom = 450;
 
         Rect visibleRect = new Rect(left, top, right, bottom);
         //visibleRect = null;
