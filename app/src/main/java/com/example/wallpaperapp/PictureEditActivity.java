@@ -4,10 +4,12 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.WallpaperManager;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -39,6 +41,7 @@ public class PictureEditActivity extends AppCompatActivity {
     private Float currentX = 0f;
     private Float currentY = 0f;
     private float scale = 1f;
+    private RectF rectF;
     private ScaleGestureDetector mScaleGestureDetector;
     private GestureDetector mGestureDetector;
 
@@ -66,6 +69,7 @@ public class PictureEditActivity extends AppCompatActivity {
         //Set image bitmap into the ImageView
         Glide.with(this)
                 .load(filePath)
+                .fitCenter()
                 .into(imgView2Edit);
 
         mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
@@ -91,8 +95,22 @@ public class PictureEditActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         String message;
-        int id = item.getItemId();
 
+        Rect rect = new Rect(0,0,0,0);
+        rectF = ImageUtils.getImageBounds(imgView2Edit);
+        rectF.round(rect);
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(filePath, options);
+
+        int imageWidth = options.outWidth;
+        int imageHeight = options.outHeight;
+
+        scale = (rectF.right - rectF.left) / imageWidth;
+
+
+        int id = item.getItemId();
         switch (id) {
             case R.id.action_set_2:
                 message = String.format("x=%f, y=%f, scale=%f", currentX, currentY, currentScale);
@@ -100,20 +118,8 @@ public class PictureEditActivity extends AppCompatActivity {
                 setWallPaper();
                 return true;
             case R.id.action_info_2:
-                Rect rect = new Rect(0,0,0,0);
-                RectF rectF = ImageUtils.getImageBounds(imgView2Edit);
-                rectF.round(rect);
-
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-                BitmapFactory.decodeFile(filePath, options);
-                int imageWidth = options.outWidth;
-                int imageHeight = options.outHeight;
-
-                scale = (rectF.right - rectF.left)/imageWidth;
-
-                message = String.format("left=%d, top=%d\nright=%d, bottom=%d\nwidth=%d, height=%d\nscale=%f",
-                                        rect.left, rect.top, rect.right, rect.bottom, imageWidth, imageHeight, scale);
+                message = String.format("currentX=%f, currentY=%f, currentScale%f\nleft=%d, top=%d\nright=%d, bottom=%d\nwidth=%d, height=%d\nscale=%f",
+                        currentX, currentY, currentScale, rect.left, rect.top, rect.right, rect.bottom, imageWidth, imageHeight, scale);
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
                 return true;
             default:
@@ -124,22 +130,23 @@ public class PictureEditActivity extends AppCompatActivity {
 
 
     private void setWallPaper() {
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         Bitmap imageBitmap = BitmapFactory.decodeFile(filePath);
+
+        Point size = new Point();
+        getDisplay().getRealSize(size);
+        int displayWidth = size.x;
+        int displayHeight = size.y;
 
         Matrix matrix = imgView2Edit.getImageMatrix();
 
-        float[] values = new float[9];
-        matrix.getValues(values);
-
-        int displayWidth = displayMetrics.widthPixels;
-        int displayHeight = displayMetrics.heightPixels;
         int imageWidth = imageBitmap.getWidth();
         int imageHeight = imageBitmap.getHeight();
-        int left = Math.min(Math.round(currentX / scale), 0);
-        int top = Math.min(Math.round(currentY / scale), 0);
-        int right = Math.round((currentX + displayWidth) / scale);
-        int bottom = Math.round((currentY + displayHeight) / scale );
+
+        int left = Math.max(Math.round(-rectF.left / scale), 0);
+        int top = Math.max(Math.round(-rectF.top / scale), 0);
+
+        int right = left + Math.round(displayWidth / scale);
+        int bottom = top + Math.round(displayHeight / scale);; //Math.round((currentY + displayHeight) / scale );
 
 //        int right = imageWidth;
 //        int bottom = imageHeight;
@@ -150,22 +157,24 @@ public class PictureEditActivity extends AppCompatActivity {
 
         //int dw = myWallpaperManager.getDesiredMinimumWidth();
         //int dh = myWallpaperManager.getDesiredMinimumHeight();
-
-        //left = 0;
-        //top = 0;
-        //right = 50;
-        //bottom = 450;
+//
+//        left = 0;
+//        top = 0;
+//        right = 1080;
+//        bottom = 2280;
 
         Rect visibleRect = new Rect(left, top, right, bottom);
         //visibleRect = null;
 
         String message = String.format("displayWidth = %d, displayHeight = %d" +
-                        "\nimageWidth = %d, imageHeight = %d" +
-                        "\nleft = %d, top = %d, " +
-                        "\nright = %d, bottom = %d",
-                displayWidth, displayHeight,
-                imageWidth, imageHeight,
-                left, top, right, bottom);
+                                        "\nimageWidth = %d, imageHeight = %d" +
+                                        "\nleft = %d, top = %d, " +
+                                        "\nright = %d, bottom = %d" +
+                                        "\nscale = %f, currentScale = %f",
+                                        displayWidth, displayHeight,
+                                        imageWidth, imageHeight,
+                                        left, top, right, bottom,
+                                        scale, currentScale);
 
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 
