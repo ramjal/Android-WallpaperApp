@@ -16,6 +16,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,6 +43,8 @@ public class PictureEditActivity extends AppCompatActivity {
     private Float currentY = 0f;
     private float scale = 1f;
     private RectF rectF;
+    private int mDisplayWidth;
+    private int mDisplayHeight;
     private ScaleGestureDetector mScaleGestureDetector;
     private GestureDetector mGestureDetector;
 
@@ -54,22 +57,27 @@ public class PictureEditActivity extends AppCompatActivity {
         //Either call the removeStatusAndNavBar()
         // or add android:theme="@style/Theme.TranslucentBars" in the Manifest file
 
+        setupVariables();
         //removeStatusAndNavBar();
         clearTitle();
         setUpImageAndGestureDetectors();
     }
 
-    // Add the bitmap to the ImageView and setup the needed TouchListener for the image
-    private void setUpImageAndGestureDetectors() {
+    private void setupVariables() {
+        Point size = new Point();
+        getDisplay().getRealSize(size);
+        mDisplayWidth = size.x;
+        mDisplayHeight = size.y;
         imgView2Edit = findViewById(R.id.imgView2Edit);
-
         //Get the file path to the image
         filePath = getIntent().getStringExtra("FILE_PATH");
+    }
 
+    // Add the bitmap to the ImageView and setup the needed TouchListener for the image
+    private void setUpImageAndGestureDetectors() {
         //Set image bitmap into the ImageView
         Glide.with(this)
                 .load(filePath)
-                .fitCenter()
                 .into(imgView2Edit);
 
         mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
@@ -132,11 +140,6 @@ public class PictureEditActivity extends AppCompatActivity {
     private void setWallPaper() {
         Bitmap imageBitmap = BitmapFactory.decodeFile(filePath);
 
-        Point size = new Point();
-        getDisplay().getRealSize(size);
-        int displayWidth = size.x;
-        int displayHeight = size.y;
-
         Matrix matrix = imgView2Edit.getImageMatrix();
 
         int imageWidth = imageBitmap.getWidth();
@@ -145,8 +148,8 @@ public class PictureEditActivity extends AppCompatActivity {
         int left = Math.max(Math.round(-rectF.left / scale), 0);
         int top = Math.max(Math.round(-rectF.top / scale), 0);
 
-        int right = left + Math.round(displayWidth / scale);
-        int bottom = top + Math.round(displayHeight / scale);; //Math.round((currentY + displayHeight) / scale );
+        int right = left + Math.round(mDisplayHeight / scale);
+        int bottom = top + Math.round(mDisplayHeight / scale);; //Math.round((currentY + displayHeight) / scale );
 
 //        int right = imageWidth;
 //        int bottom = imageHeight;
@@ -171,7 +174,7 @@ public class PictureEditActivity extends AppCompatActivity {
                                         "\nleft = %d, top = %d, " +
                                         "\nright = %d, bottom = %d" +
                                         "\nscale = %f, currentScale = %f",
-                                        displayWidth, displayHeight,
+                                        mDisplayWidth, mDisplayHeight,
                                         imageWidth, imageHeight,
                                         left, top, right, bottom,
                                         scale, currentScale);
@@ -202,6 +205,15 @@ public class PictureEditActivity extends AppCompatActivity {
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
+
+            rectF = ImageUtils.getImageBounds(imgView2Edit);
+            if (rectF.left > 0 || rectF.right < mDisplayWidth) {
+                return false;
+            }
+            if (rectF.top > 0 || rectF.bottom < mDisplayHeight) {
+                return false;
+            }
+
             currentScale = currentScale * detector.getScaleFactor();
             currentScale = Math.max(MIN_SIZE, Math.min(currentScale, MAX_SIZE));
             mMatrix.setScale(currentScale, currentScale, detector.getFocusX(), detector.getFocusY());
@@ -214,11 +226,25 @@ public class PictureEditActivity extends AppCompatActivity {
     private class ScrollListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            //Log.d(DEBUG_TAG,String.format("onScroll %f, %f", distanceX, distanceY));
+            rectF = ImageUtils.getImageBounds(imgView2Edit);
+
+//            Log.d(DEBUG_TAG,String.format("onScroll - distanceX = %f, distanceY = %f | currentX = %f, currentY = %f",
+//                                            distanceX, distanceY, currentX, currentY));
+//            Log.d(DEBUG_TAG, String.format("onScroll - left = %f, top = %f, right = %f, bottom = %f",
+//                    rectF.left, rectF.top, rectF.right, rectF.bottom));
+//
+            if (rectF.left > distanceX || rectF.right - distanceX < mDisplayWidth) {
+                distanceX = 0;
+            }
+            if (rectF.top > distanceY || rectF.bottom - distanceY < mDisplayHeight) {
+                distanceY = 0;
+            }
+
             currentX += distanceX;
             currentY += distanceY;
             mMatrix.postTranslate(-distanceX, -distanceY);
             imgView2Edit.setImageMatrix(mMatrix);
+
             return true;
         }
     }
