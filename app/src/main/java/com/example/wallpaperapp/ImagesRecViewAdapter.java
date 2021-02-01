@@ -64,28 +64,9 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         Glide.with(mainContext)
                 .load(imagePath)
                 .into(holder.imageViewItem);
-        //                .centerCrop()
+        //        .centerCrop()
 
-        //float dx = ImageUtils.getImageOptions(imagePath).outWidth;
-        float dx = 0f;
-        float dy = 0f;
-        float aspectView = (float)holder.imageViewItem.getLayoutParams().width / holder.imageViewItem.getLayoutParams().height;
-        float aspectImage = (float)ImageUtils.getImageOptions(imagePath).outWidth / ImageUtils.getImageOptions(imagePath).outHeight;
-
-        float ratio = 1f;
-        if (aspectView > aspectImage) {
-            ratio = (float)holder.imageViewItem.getLayoutParams().width / ImageUtils.getImageOptions(imagePath).outWidth;
-            dy = (ImageUtils.getImageOptions(imagePath).outHeight * ratio - holder.imageViewItem.getLayoutParams().height) / 2;
-        } else {
-            ratio = (float)holder.imageViewItem.getLayoutParams().height / ImageUtils.getImageOptions(imagePath).outHeight;
-            dx = (ImageUtils.getImageOptions(imagePath).outWidth * ratio - holder.imageViewItem.getLayoutParams().width) / 2;
-        }
-
-
-        Matrix mMatrix = new Matrix();
-        //mMatrix.setScale(currentScale, currentScale);
-        mMatrix.postTranslate(-dx, -dy);
-        holder.imageViewItem.setImageMatrix(mMatrix);
+        holder.imageViewItem.setImageMatrix(createImageMartix(holder.imageViewItem, imagePath));
 
 //        holder.imageViewItem.setOnClickListener(new View.OnClickListener() {
 //            @RequiresApi(api = Build.VERSION_CODES.N)
@@ -108,6 +89,28 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 //            }
 //        });
 
+    }
+
+    private Matrix createImageMartix(ImageView imageView, String imagePath) {
+        Matrix mMatrix = new Matrix();
+
+        float dx = 0f;
+        float dy = 0f;
+        float aspectView = (float)imageView.getLayoutParams().width / imageView.getLayoutParams().height;
+        float aspectImage = (float)ImageUtils.getImageOptions(imagePath).outWidth / ImageUtils.getImageOptions(imagePath).outHeight;
+
+        float ratio = 1f;
+        if (aspectView > aspectImage) {
+            ratio = (float)imageView.getLayoutParams().width / ImageUtils.getImageOptions(imagePath).outWidth;
+            dy = (ImageUtils.getImageOptions(imagePath).outHeight * ratio - imageView.getLayoutParams().height) / 2;
+        } else {
+            ratio = (float)imageView.getLayoutParams().height / ImageUtils.getImageOptions(imagePath).outHeight;
+            dx = (ImageUtils.getImageOptions(imagePath).outWidth * ratio - imageView.getLayoutParams().width) / 2;
+        }
+
+        //mMatrix.setScale(currentScale, currentScale);
+        mMatrix.postTranslate(-dx, -dy);
+        return mMatrix;
     }
 
     private void setWallPaper(Bitmap imageBitmap) {
