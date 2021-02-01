@@ -150,23 +150,13 @@ public class PictureEditActivity extends AppCompatActivity {
         int left = Math.max(Math.round(-rectF.left / scale), 0);
         int top = Math.max(Math.round(-rectF.top / scale), 0);
 
-        int right = left + Math.round(mDisplayHeight / scale);
-        int bottom = top + Math.round(mDisplayHeight / scale);; //Math.round((currentY + displayHeight) / scale );
+        int right = left + Math.round(mDisplayWidth / scale);
+        int bottom = top + Math.round(mDisplayHeight / scale);
 
-//        int right = imageWidth;
-//        int bottom = imageHeight;
-//        if (imageWidth > displayWidth) {
-//            left = (imageWidth - displayWidth) / 2;
-//            right = left + imageWidth;
-//        }
-
-        //int dw = myWallpaperManager.getDesiredMinimumWidth();
-        //int dh = myWallpaperManager.getDesiredMinimumHeight();
-//
-//        left = 0;
+//        left = 400;
 //        top = 0;
-//        right = 1080;
-//        bottom = 2280;
+//        right = 600;
+//        bottom = 450;
 
         Rect visibleRect = new Rect(left, top, right, bottom);
         //visibleRect = null;
