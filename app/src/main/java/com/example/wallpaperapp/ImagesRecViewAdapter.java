@@ -5,7 +5,9 @@ import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -33,7 +35,7 @@ import static android.app.WallpaperManager.FLAG_LOCK;
 
 public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdapter.PictureViewHolder> {
 
-    private static ArrayList<ImageModel> imagesList = new ArrayList<>();
+    private static ArrayList<ImageModel> imagesList;
     private Context mainContext;
     private DisplayMetrics displayMetrics;
     private OnPictureClickListener onPictureClickListener;
@@ -57,10 +59,33 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 //        Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(position).getFile().getAbsolutePath());
 //        holder.imageViewItem.setImageBitmap(imgBitmap);
 
+        String imagePath = imagesList.get(position).getFile().getAbsolutePath();
+
         Glide.with(mainContext)
-                .load(imagesList.get(position).getFile().getAbsolutePath())
-                .centerCrop()
+                .load(imagePath)
                 .into(holder.imageViewItem);
+        //                .centerCrop()
+
+        //float dx = ImageUtils.getImageOptions(imagePath).outWidth;
+        float dx = 0f;
+        float dy = 0f;
+        float aspectView = (float)holder.imageViewItem.getLayoutParams().width / holder.imageViewItem.getLayoutParams().height;
+        float aspectImage = (float)ImageUtils.getImageOptions(imagePath).outWidth / ImageUtils.getImageOptions(imagePath).outHeight;
+
+        float ratio = 1f;
+        if (aspectView > aspectImage) {
+            ratio = (float)holder.imageViewItem.getLayoutParams().width / ImageUtils.getImageOptions(imagePath).outWidth;
+            dy = (ImageUtils.getImageOptions(imagePath).outHeight * ratio - holder.imageViewItem.getLayoutParams().height) / 2;
+        } else {
+            ratio = (float)holder.imageViewItem.getLayoutParams().height / ImageUtils.getImageOptions(imagePath).outHeight;
+            dx = (ImageUtils.getImageOptions(imagePath).outWidth * ratio - holder.imageViewItem.getLayoutParams().width) / 2;
+        }
+
+
+        Matrix mMatrix = new Matrix();
+        //mMatrix.setScale(currentScale, currentScale);
+        mMatrix.postTranslate(-dx, -dy);
+        holder.imageViewItem.setImageMatrix(mMatrix);
 
 //        holder.imageViewItem.setOnClickListener(new View.OnClickListener() {
 //            @RequiresApi(api = Build.VERSION_CODES.N)

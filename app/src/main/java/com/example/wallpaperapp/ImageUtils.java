@@ -3,6 +3,7 @@ package com.example.wallpaperapp;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -87,6 +88,14 @@ public class ImageUtils {
             imageView.getImageMatrix().mapRect(bounds, new RectF(drawable.getBounds()));
         }
         return bounds;
+    }
+
+    public static BitmapFactory.Options getImageOptions(String filePath) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(filePath, options);
+
+        return options;
     }
 
 }

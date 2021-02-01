@@ -18,9 +18,8 @@
             android:id="@+id/imgViewItem"
             android:layout_width="140dp"
             android:layout_height="140dp"
-            android:layout_centerHorizontal="true"
-            />
-        <!-- android:scaleType="fitCenter"-->
+            android:scaleType="matrix"
+            android:layout_centerHorizontal="true" />
 
     </RelativeLayout>
 

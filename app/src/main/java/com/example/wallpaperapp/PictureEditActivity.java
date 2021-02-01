@@ -110,15 +110,9 @@ public class PictureEditActivity extends AppCompatActivity {
         rectF = ImageUtils.getImageBounds(imgView2Edit);
         rectF.round(rect);
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, options);
+        BitmapFactory.Options options = ImageUtils.getImageOptions(filePath);
 
-        int imageWidth = options.outWidth;
-        int imageHeight = options.outHeight;
-
-        scale = (rectF.right - rectF.left) / imageWidth;
-
+        scale = (rectF.right - rectF.left) / options.outWidth;
 
         int id = item.getItemId();
         switch (id) {
@@ -129,7 +123,7 @@ public class PictureEditActivity extends AppCompatActivity {
                 return true;
             case R.id.action_info_2:
                 message = String.format("currentX=%f, currentY=%f, currentScale%f\nleft=%d, top=%d\nright=%d, bottom=%d\nwidth=%d, height=%d\nscale=%f",
-                        currentX, currentY, currentScale, rect.left, rect.top, rect.right, rect.bottom, imageWidth, imageHeight, scale);
+                        currentX, currentY, currentScale, rect.left, rect.top, rect.right, rect.bottom, options.outWidth, options.outHeight, scale);
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
                 return true;
             default:
@@ -161,17 +155,16 @@ public class PictureEditActivity extends AppCompatActivity {
         Rect visibleRect = new Rect(left, top, right, bottom);
         //visibleRect = null;
 
-        String message = String.format("displayWidth = %d, displayHeight = %d" +
-                                        "\nimageWidth = %d, imageHeight = %d" +
-                                        "\nleft = %d, top = %d, " +
-                                        "\nright = %d, bottom = %d" +
-                                        "\nscale = %f, currentScale = %f",
-                                        mDisplayWidth, mDisplayHeight,
-                                        imageWidth, imageHeight,
-                                        left, top, right, bottom,
-                                        scale, currentScale);
-
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+//        String message = String.format("displayWidth = %d, displayHeight = %d" +
+//                                        "\nimageWidth = %d, imageHeight = %d" +
+//                                        "\nleft = %d, top = %d, " +
+//                                        "\nright = %d, bottom = %d" +
+//                                        "\nscale = %f, currentScale = %f",
+//                                        mDisplayWidth, mDisplayHeight,
+//                                        imageWidth, imageHeight,
+//                                        left, top, right, bottom,
+//                                        scale, currentScale);
+//        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 
         ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
     }
