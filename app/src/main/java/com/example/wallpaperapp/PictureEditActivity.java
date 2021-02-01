@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -81,6 +82,7 @@ public class PictureEditActivity extends AppCompatActivity {
                 .into(imgView2Edit);
 
         mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
+        //mScaleGestureDetector.setQuickScaleEnabled(false);
         mGestureDetector = new GestureDetector(this, new ScrollListener());
         imgView2Edit.setOnTouchListener(new ImageOnTouchListener());
         mMatrix.setScale(currentScale, currentScale);
@@ -184,6 +186,7 @@ public class PictureEditActivity extends AppCompatActivity {
         ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
     }
 
+
     //Clean up extra bars from the top and the buttom
     private void removeStatusAndNavBar() {
         getSupportActionBar().hide(); //hide the title bar
@@ -196,6 +199,7 @@ public class PictureEditActivity extends AppCompatActivity {
         }
     }
 
+
     //remove the Title from actoin bar
     private void clearTitle() {
         getSupportActionBar().setTitle("");
@@ -205,21 +209,37 @@ public class PictureEditActivity extends AppCompatActivity {
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-
-            rectF = ImageUtils.getImageBounds(imgView2Edit);
-            if (rectF.left > 0 || rectF.right < mDisplayWidth) {
-                return false;
+            float newFactor = detector.getScaleFactor();
+            setCurrentXY();
+            if (currentScale * newFactor < 1) {
+                newFactor = 1;
             }
-            if (rectF.top > 0 || rectF.bottom < mDisplayHeight) {
-                return false;
-            }
-
-            currentScale = currentScale * detector.getScaleFactor();
+            currentScale = currentScale * newFactor;
             currentScale = Math.max(MIN_SIZE, Math.min(currentScale, MAX_SIZE));
             mMatrix.setScale(currentScale, currentScale, detector.getFocusX(), detector.getFocusY());
             mMatrix.postTranslate(-currentX, -currentY);
             imgView2Edit.setImageMatrix(mMatrix);
             return true;
+        }
+
+        private void setCurrentXY() {
+            rectF = ImageUtils.getImageBounds(imgView2Edit);
+
+            if (rectF.top > 0) {
+                currentY += (rectF.top * currentScale);
+            }
+
+            if (rectF.left > 0) {
+                currentX += (rectF.left * currentScale);
+            }
+
+            if (rectF.right < mDisplayWidth) {
+                currentX -= ((mDisplayWidth - rectF.right) * currentScale);
+            }
+
+            if (rectF.bottom < mDisplayHeight) {
+                currentY -= ((mDisplayHeight - rectF.bottom) * currentScale);
+            }
         }
     }
 
@@ -228,11 +248,6 @@ public class PictureEditActivity extends AppCompatActivity {
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             rectF = ImageUtils.getImageBounds(imgView2Edit);
 
-//            Log.d(DEBUG_TAG,String.format("onScroll - distanceX = %f, distanceY = %f | currentX = %f, currentY = %f",
-//                                            distanceX, distanceY, currentX, currentY));
-//            Log.d(DEBUG_TAG, String.format("onScroll - left = %f, top = %f, right = %f, bottom = %f",
-//                    rectF.left, rectF.top, rectF.right, rectF.bottom));
-//
             if (rectF.left > distanceX || rectF.right - distanceX < mDisplayWidth) {
                 distanceX = 0;
             }
@@ -247,6 +262,7 @@ public class PictureEditActivity extends AppCompatActivity {
 
             return true;
         }
+
     }
 
     private class ImageOnTouchListener implements View.OnTouchListener {
@@ -254,28 +270,6 @@ public class PictureEditActivity extends AppCompatActivity {
         public boolean onTouch(View v, MotionEvent event) {
             mScaleGestureDetector.onTouchEvent(event);
             mGestureDetector.onTouchEvent(event);
-//            int action = event.getActionMasked();
-//            int x = Math.round(event.getRawX());
-//            int y = Math.round(event.getRawY());
-//            switch (action) {
-//                case (MotionEvent.ACTION_DOWN):
-//                    Log.d(DEBUG_TAG,"Action was DOWN");
-//                    return true;
-//                case (MotionEvent.ACTION_MOVE):
-//                    Log.d(DEBUG_TAG, String.format("MOVE: %d, %d", x, y));
-//                    return true;
-//                case (MotionEvent.ACTION_UP):
-//                    Log.d(DEBUG_TAG,"Action was UP");
-//                    return true;
-//                case (MotionEvent.ACTION_CANCEL):
-//                    Log.d(DEBUG_TAG,"Action was CANCEL");
-//                    return true;
-//                case (MotionEvent.ACTION_OUTSIDE):
-//                    Log.d(DEBUG_TAG,"Movement occurred outside bounds of current screen element");
-//                    return true;
-//                default:
-//                    return true;
-//            }
             return true;
         }
     }
