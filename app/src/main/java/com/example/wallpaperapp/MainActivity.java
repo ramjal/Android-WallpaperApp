@@ -1,18 +1,11 @@
 package com.example.wallpaperapp;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.SystemClock;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,32 +13,24 @@ import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int PRIVATE_REQUEST_ID = 11;
     private static final String INTERVAL_HOURS_KEY = "interval_hours";
-    public static final String IMAGE_ARRAY_KEY = "images_name_array";
+    public static final String IMAGE_PATH_ARRAY = "images_path_array";
     public static final String IMAGE_INDEX = "images_index";
+    public static final String IMAGES_RECT_SET = "images_rect_set";
 
-    private SharedPreferences mPreferences;
-    private String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
+    private SharedPreferences sharedPreferences;
+    static public final String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
 
     private Spinner spnInerval;
     private TextView txtIndex;
@@ -54,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private AlarmManager alarmManager;
     private Intent alarmIntent;
     private PendingIntent alarmPendingIntent;
-    private HashMap<String, Integer> intervalMap;
+    //private HashMap<String, Integer> intervalMap;
     private int selectedIntervalHour;
     private int pictureIndex;
     private List<String> intervalsText;
@@ -80,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         btnStartStop.setOnCheckedChangeListener(new btnStartStopChanged());
 
         //Get the shared preferences for reading app saved data
-        mPreferences = getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
 
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmIntent = new Intent(this, AlarmReceiver.class);
@@ -93,18 +78,12 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
 
         SaveSharedData();
-//
-//        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
-//        preferencesEditor.putInt(IMAGE_ARRAY_KEY, selectedIntervalHour);
-//        //preferencesEditor.putInt(IMAGE_INDEX, pictureIndex);
-//
-//        preferencesEditor.apply();
     }
 
     //Create shared object and save the needed data
     private void SaveSharedData() {
-        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
-        preferencesEditor.putInt(IMAGE_ARRAY_KEY, selectedIntervalHour);
+        SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
+        preferencesEditor.putInt(INTERVAL_HOURS_KEY, selectedIntervalHour);
         preferencesEditor.apply();
     }
 
@@ -124,8 +103,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (alarmPendingIntent != null) {
             isAlarmAlreadySet = true;
-            selectedIntervalHour = mPreferences.getInt(IMAGE_ARRAY_KEY, 1);
-            pictureIndex = mPreferences.getInt(IMAGE_INDEX, 0);
+            selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS_KEY, 1);
+            pictureIndex = sharedPreferences.getInt(IMAGE_INDEX, 0);
             txtIndex.setText(String.valueOf(pictureIndex));
 
             Integer position = intervalsNumber.indexOf(selectedIntervalHour);
@@ -157,9 +136,9 @@ public class MainActivity extends AppCompatActivity {
     private void startAlarm() {
         if (isAlarmAlreadySet) return;
         //long repeatInterval = 5000;
-        long repeatInterval = selectedIntervalHour * 3600 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+        long repeatInterval = 30000; //selectedIntervalHour * 3600 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
-        alarmIntent.putExtra(IMAGE_ARRAY_KEY , getImagesNameArray(ImageUtils.getImagesList(this)));
+        alarmIntent.putExtra(IMAGE_PATH_ARRAY, getImagesNameArray(ImageUtils.getImagesList(this)));
         alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,
                 PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (alarmManager != null && alarmPendingIntent != null) {

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.WallpaperManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +16,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.ArraySet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -34,6 +36,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class PictureEditActivity extends AppCompatActivity {
     private final String DEBUG_TAG = PictureEditActivity.class.getSimpleName();
+    private SharedPreferences sharedPreferences;
     private final Float MIN_SIZE = 0.5F;
     private final Float MAX_SIZE = 4f;
     private ImageView imgView2Edit;
@@ -54,6 +57,8 @@ public class PictureEditActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picture_edit);
+
+        sharedPreferences = getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
 
         //Either call the removeStatusAndNavBar()
         // or add android:theme="@style/Theme.TranslucentBars" in the Manifest file
@@ -167,6 +172,14 @@ public class PictureEditActivity extends AppCompatActivity {
 //        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 
         ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
+
+        SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
+        ArraySet<String> myset = new ArraySet<String>();
+        //myset.add("", "");
+        preferencesEditor.putStringSet(MainActivity.IMAGES_RECT_SET, new ArraySet<String>());
+        preferencesEditor.apply();
+
+        ArraySet<String> imagesRectSet = (ArraySet<String>)sharedPreferences.getStringSet("IMAGES_RECT_SET", new ArraySet<String>());
     }
 
 

@@ -92,7 +92,49 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     }
 
     private Matrix createImageMartix(ImageView imageView, String imagePath) {
-        Matrix mMatrix = new Matrix();
+        Matrix matrix = new Matrix();
+
+//        left:   1203
+//        top:    1087
+//        right:  2074
+//        bottom: 2926
+
+        float dx = 0f;
+        float dy = 0f;
+        float aspectImageView = (float) imageView.getLayoutParams().width / imageView.getLayoutParams().height;
+        float aspectPicture = (float) ImageUtils.getImageOptions(imagePath).outWidth / ImageUtils.getImageOptions(imagePath).outHeight;
+
+        float scale = 1f;
+        if (aspectImageView > aspectPicture) {
+            scale = (float) imageView.getLayoutParams().width / ImageUtils.getImageOptions(imagePath).outWidth;
+            dy = (ImageUtils.getImageOptions(imagePath).outHeight * scale - imageView.getLayoutParams().height) / 2;
+        } else {
+            scale = (float) imageView.getLayoutParams().height / ImageUtils.getImageOptions(imagePath).outHeight;
+            dx = (ImageUtils.getImageOptions(imagePath).outWidth * scale - imageView.getLayoutParams().width) / 2;
+        }
+
+
+        if (imagePath.endsWith("2.jpg"))
+        {
+            float imageViewWidth = (float)imageView.getLayoutParams().width;
+            float imageViewHeight = (float)imageView.getLayoutParams().height;
+            //scale * Rect
+            RectF imageRect = new RectF(274, 318, 419, 624);
+            RectF viewRect = new RectF(0, 0, imageViewWidth, imageViewHeight);
+
+            boolean result = matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
+
+        } else {
+            matrix.postTranslate(-dx, -dy);
+        }
+
+        //mMatrix.setScale(currentScale, currentScale);
+
+        return matrix;
+    }
+
+    private Matrix createImageMartix2(ImageView imageView, String imagePath) {
+        Matrix matrix = new Matrix();
 
         float dx = 0f;
         float dy = 0f;
@@ -109,8 +151,8 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         }
 
         //mMatrix.setScale(currentScale, currentScale);
-        mMatrix.postTranslate(-dx, -dy);
-        return mMatrix;
+        matrix.postTranslate(-dx, -dy);
+        return matrix;
     }
 
     private void setWallPaper(Bitmap imageBitmap) {

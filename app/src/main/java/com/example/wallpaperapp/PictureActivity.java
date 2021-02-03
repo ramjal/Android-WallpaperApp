@@ -6,11 +6,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.ArraySet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +29,7 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
     private static final String LOG_TAG = PictureActivity.class.getSimpleName();
     private static final int MY_REQEST_CODE = 1234;
 
+    private SharedPreferences sharedPreferences;
     private RecyclerView recviewImageList;
     private OutputStream outputStream;
     private ImagesRecViewAdapter recviewAdapter;
@@ -37,6 +40,10 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         setContentView(R.layout.activity_picture);
 
         recviewImageList = findViewById(R.id.recviewImageList);
+        //Get the shared preferences for reading app saved data
+        sharedPreferences = getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
+        ArraySet<String> imagesRectSet = (ArraySet<String>)
+                sharedPreferences.getStringSet(MainActivity.IMAGES_RECT_SET, new ArraySet<String>());
 
         recviewAdapter = new ImagesRecViewAdapter(this, this);
         recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
