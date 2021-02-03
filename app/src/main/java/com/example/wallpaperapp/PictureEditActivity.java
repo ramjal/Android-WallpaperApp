@@ -42,6 +42,7 @@ public class PictureEditActivity extends AppCompatActivity {
     private ImageView imgView2Edit;
     private Matrix mMatrix = new Matrix();
     private String filePath;
+    private String fileName;
     private Float currentScale = 1f;
     private Float currentX = 0f;
     private Float currentY = 0f;
@@ -76,7 +77,8 @@ public class PictureEditActivity extends AppCompatActivity {
         mDisplayHeight = size.y;
         imgView2Edit = findViewById(R.id.imgView2Edit);
         //Get the file path to the image
-        filePath = getIntent().getStringExtra("FILE_PATH");
+        filePath = getIntent().getStringExtra(PictureActivity.FILE_PATH);
+        fileName = getIntent().getStringExtra(PictureActivity.FILE_NAME);
     }
 
     // Add the bitmap to the ImageView and setup the needed TouchListener for the image
@@ -122,8 +124,8 @@ public class PictureEditActivity extends AppCompatActivity {
         int id = item.getItemId();
         switch (id) {
             case R.id.action_set_2:
-                message = String.format("x=%f, y=%f, scale=%f", currentX, currentY, currentScale);
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+//                message = String.format("x=%f, y=%f, scale=%f", currentX, currentY, currentScale);
+//                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
                 setWallPaper();
                 return true;
             case R.id.action_info_2:
@@ -174,14 +176,11 @@ public class PictureEditActivity extends AppCompatActivity {
         ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
 
         SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
-        ArraySet<String> myset = new ArraySet<String>();
-        //myset.add("", "");
-        preferencesEditor.putStringSet(MainActivity.IMAGES_RECT_SET, new ArraySet<String>());
+        String rectStr = String.format("%d,%d,%d,%d", visibleRect.left, visibleRect.top, visibleRect.right, visibleRect.bottom);
+        preferencesEditor.putString(fileName, rectStr);
         preferencesEditor.apply();
-
-        ArraySet<String> imagesRectSet = (ArraySet<String>)sharedPreferences.getStringSet("IMAGES_RECT_SET", new ArraySet<String>());
+        Toast.makeText(this, "Wallpaper is set!", Toast.LENGTH_LONG).show();
     }
-
 
     //Clean up extra bars from the top and the buttom
     private void removeStatusAndNavBar() {

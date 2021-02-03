@@ -4,7 +4,9 @@ import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -32,9 +34,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import static android.app.WallpaperManager.FLAG_LOCK;
+import static android.content.Context.MODE_PRIVATE;
 
 public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdapter.PictureViewHolder> {
 
+    private SharedPreferences sharedPreferences;
     private static ArrayList<ImageModel> imagesList;
     private Context mainContext;
     private DisplayMetrics displayMetrics;
@@ -44,12 +48,14 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         mainContext = context;
         displayMetrics = mainContext.getResources().getDisplayMetrics();
         this.onPictureClickListener = onPictureClickListener;
+        //Get the shared preferences for reading app saved data
+        sharedPreferences = mainContext.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
     }
 
     @NonNull
     @Override
     public PictureViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.images_list_item, parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.images_list_item, parent, false);
         PictureViewHolder holder = new PictureViewHolder(view, onPictureClickListener);
         return holder;
     }
@@ -59,14 +65,14 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 //        Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(position).getFile().getAbsolutePath());
 //        holder.imageViewItem.setImageBitmap(imgBitmap);
 
-        String imagePath = imagesList.get(position).getFile().getAbsolutePath();
+        ImageModel image = imagesList.get(position);
 
         Glide.with(mainContext)
-                .load(imagePath)
+                .load(image.getFile().getAbsolutePath())
                 .into(holder.imageViewItem);
         //        .centerCrop()
 
-        holder.imageViewItem.setImageMatrix(createImageMartix(holder.imageViewItem, imagePath));
+        holder.imageViewItem.setImageMatrix(createImageMartix(holder.imageViewItem, image));
 
 //        holder.imageViewItem.setOnClickListener(new View.OnClickListener() {
 //            @RequiresApi(api = Build.VERSION_CODES.N)
@@ -91,62 +97,57 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
     }
 
-    private Matrix createImageMartix(ImageView imageView, String imagePath) {
-        Matrix matrix = new Matrix();
+    private Matrix createImageMartix(ImageView imageView, ImageModel image) {
+        Matrix matrix = null;
 
-//        left:   1203
-//        top:    1087
-//        right:  2074
-//        bottom: 2926
+        String imagePath = image.getFile().getAbsolutePath();
+        String rectStr = sharedPreferences.getString(image.getName(), null);
+        if (rectStr != null) {
+            BitmapFactory.Options options = ImageUtils.getImageOptions(imagePath);
+            int imageViewWidth = imageView.getLayoutParams().width;
+            int imageViewHeight = imageView.getLayoutParams().height;
+            float aspectImageView = (float) imageViewWidth / imageViewHeight;
+            float aspectPicture = (float) options.outWidth / options.outHeight;
+            float scale = 1f;
 
-        float dx = 0f;
-        float dy = 0f;
-        float aspectImageView = (float) imageView.getLayoutParams().width / imageView.getLayoutParams().height;
-        float aspectPicture = (float) ImageUtils.getImageOptions(imagePath).outWidth / ImageUtils.getImageOptions(imagePath).outHeight;
+            if (aspectImageView > aspectPicture) {
+                scale = (float) imageViewWidth / options.outWidth;
+            } else {
+                scale = (float) imageViewHeight / options.outHeight;
+            }
 
-        float scale = 1f;
-        if (aspectImageView > aspectPicture) {
-            scale = (float) imageView.getLayoutParams().width / ImageUtils.getImageOptions(imagePath).outWidth;
-            dy = (ImageUtils.getImageOptions(imagePath).outHeight * scale - imageView.getLayoutParams().height) / 2;
-        } else {
-            scale = (float) imageView.getLayoutParams().height / ImageUtils.getImageOptions(imagePath).outHeight;
-            dx = (ImageUtils.getImageOptions(imagePath).outWidth * scale - imageView.getLayoutParams().width) / 2;
+            String[] arrayRect = rectStr.split(",");
+            if (arrayRect.length == 4) {
+                //RectF imageRect = new RectF(274, 318, 419, 624);
+                RectF imageRect = new RectF(Integer.parseInt(arrayRect[0]) * scale,
+                        Integer.parseInt(arrayRect[1]) * scale,
+                        Integer.parseInt(arrayRect[2]) * scale,
+                        Integer.parseInt(arrayRect[3]) * scale);
+                RectF viewRect = new RectF(0, 0, imageViewWidth, imageViewHeight);
+                matrix = new Matrix();
+                boolean result = matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
+            }
         }
-
-
-        if (imagePath.endsWith("2.jpg"))
-        {
-            float imageViewWidth = (float)imageView.getLayoutParams().width;
-            float imageViewHeight = (float)imageView.getLayoutParams().height;
-            //scale * Rect
-            RectF imageRect = new RectF(274, 318, 419, 624);
-            RectF viewRect = new RectF(0, 0, imageViewWidth, imageViewHeight);
-
-            boolean result = matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
-
-        } else {
-            matrix.postTranslate(-dx, -dy);
+        if (matrix == null) {
+            matrix = createImageMartixCenter(imageView, imagePath);
         }
-
-        //mMatrix.setScale(currentScale, currentScale);
-
         return matrix;
     }
 
-    private Matrix createImageMartix2(ImageView imageView, String imagePath) {
+    private Matrix createImageMartixCenter(ImageView imageView, String imagePath) {
         Matrix matrix = new Matrix();
 
         float dx = 0f;
         float dy = 0f;
-        float aspectView = (float)imageView.getLayoutParams().width / imageView.getLayoutParams().height;
-        float aspectImage = (float)ImageUtils.getImageOptions(imagePath).outWidth / ImageUtils.getImageOptions(imagePath).outHeight;
+        float aspectView = (float) imageView.getLayoutParams().width / imageView.getLayoutParams().height;
+        float aspectImage = (float) ImageUtils.getImageOptions(imagePath).outWidth / ImageUtils.getImageOptions(imagePath).outHeight;
 
         float ratio = 1f;
         if (aspectView > aspectImage) {
-            ratio = (float)imageView.getLayoutParams().width / ImageUtils.getImageOptions(imagePath).outWidth;
+            ratio = (float) imageView.getLayoutParams().width / ImageUtils.getImageOptions(imagePath).outWidth;
             dy = (ImageUtils.getImageOptions(imagePath).outHeight * ratio - imageView.getLayoutParams().height) / 2;
         } else {
-            ratio = (float)imageView.getLayoutParams().height / ImageUtils.getImageOptions(imagePath).outHeight;
+            ratio = (float) imageView.getLayoutParams().height / ImageUtils.getImageOptions(imagePath).outHeight;
             dx = (ImageUtils.getImageOptions(imagePath).outWidth * ratio - imageView.getLayoutParams().width) / 2;
         }
 
@@ -178,7 +179,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         //visibleRect = null;
 
 
-       // https://stackoverflow.com/questions/7383361/android-wallpapermanager-crops-image
+        // https://stackoverflow.com/questions/7383361/android-wallpapermanager-crops-image
 
 
         String message = String.format("displayWidth = %d, displayHeight = %d" +
@@ -221,7 +222,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
                 DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         Toast.makeText(mainContext, imagesList.get(position).getName() + " - Pressed Cancel", Toast.LENGTH_SHORT).show();
-                   }
+                    }
                 });
 
         // Create and show the AlertDialog.

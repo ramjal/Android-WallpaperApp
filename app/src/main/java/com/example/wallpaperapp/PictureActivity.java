@@ -28,8 +28,9 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
 
     private static final String LOG_TAG = PictureActivity.class.getSimpleName();
     private static final int MY_REQEST_CODE = 1234;
+    public static final String FILE_PATH = "FILE_PATH";
+    public static final String FILE_NAME = "FILE_NAME";
 
-    private SharedPreferences sharedPreferences;
     private RecyclerView recviewImageList;
     private OutputStream outputStream;
     private ImagesRecViewAdapter recviewAdapter;
@@ -40,10 +41,6 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         setContentView(R.layout.activity_picture);
 
         recviewImageList = findViewById(R.id.recviewImageList);
-        //Get the shared preferences for reading app saved data
-        sharedPreferences = getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
-        ArraySet<String> imagesRectSet = (ArraySet<String>)
-                sharedPreferences.getStringSet(MainActivity.IMAGES_RECT_SET, new ArraySet<String>());
 
         recviewAdapter = new ImagesRecViewAdapter(this, this);
         recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
@@ -134,7 +131,9 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
     @Override
     public void onPictureClick(int position) {
         Intent intent = new Intent(this, PictureEditActivity.class);
-        intent.putExtra("FILE_PATH", ImageUtils.getImagesList(this).get(position).getFile().getAbsolutePath());
+        ImageModel image = ImageUtils.getImagesList(this).get(position);
+        intent.putExtra(FILE_PATH, image.getFile().getAbsolutePath());
+        intent.putExtra(FILE_NAME, image.getName());
         startActivity(intent);
     }
 }
