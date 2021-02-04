@@ -3,8 +3,11 @@ package com.example.wallpaperapp;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -34,6 +37,11 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.parceler.Parcels;
+
+import java.io.File;
+
+
 public class PictureEditActivity extends AppCompatActivity {
     private final String DEBUG_TAG = PictureEditActivity.class.getSimpleName();
     private SharedPreferences sharedPreferences;
@@ -42,7 +50,7 @@ public class PictureEditActivity extends AppCompatActivity {
     private ImageView imgView2Edit;
     private Matrix mMatrix = new Matrix();
     private String filePath;
-    private String fileName;
+    private ImageModel imageModel;
     private Float currentScale = 1f;
     private Float currentX = 0f;
     private Float currentY = 0f;
@@ -77,8 +85,11 @@ public class PictureEditActivity extends AppCompatActivity {
         mDisplayHeight = size.y;
         imgView2Edit = findViewById(R.id.imgView2Edit);
         //Get the file path to the image
-        filePath = getIntent().getStringExtra(PictureActivity.FILE_PATH);
-        fileName = getIntent().getStringExtra(PictureActivity.FILE_NAME);
+        //filePath = getIntent().getStringExtra(PictureActivity.FILE_PATH);
+        //fileName = getIntent().getStringExtra(PictureActivity.FILE_NAME);
+
+        imageModel = (ImageModel) Parcels.unwrap(getIntent().getParcelableExtra(PictureActivity.IMAGE_MODEL));
+        filePath = imageModel.getFile().getAbsolutePath();
     }
 
     // Add the bitmap to the ImageView and setup the needed TouchListener for the image
@@ -133,12 +144,47 @@ public class PictureEditActivity extends AppCompatActivity {
                         currentX, currentY, currentScale, rect.left, rect.top, rect.right, rect.bottom, options.outWidth, options.outHeight, scale);
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
                 return true;
+            case R.id.action_delete_2:
+                handleDelete();
             default:
                 // Do nothing
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private void handleDelete() {
+        //Toast.makeText(mainContext, imagesList.get(position).getName() + " Long Pressed!", Toast.LENGTH_SHORT).show();
+        AlertDialog.Builder myAlterDialog = new AlertDialog.Builder(this);
+        myAlterDialog.setTitle("Delete Image");
+        myAlterDialog.setMessage("Are you sure you want to delete this image?");
+
+        // Add the dialog buttons.
+        myAlterDialog.setPositiveButton("Yes", new
+                DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            imageModel.file.delete();
+                            Intent replyIntent = new Intent();
+                            replyIntent.putExtra(PictureActivity.MESSAGE_REPLY, imageModel.getName() + " is now deleted!");
+                            setResult(RESULT_OK, replyIntent);
+                            finish();
+                            //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(PictureEditActivity.this, "!!!Error - Cannot Delete " + imageModel.getName(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+        myAlterDialog.setNegativeButton("No", new
+                DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " - Pressed Cancel", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        // Create and show the AlertDialog.
+        myAlterDialog.show();
+    }
 
     private void setWallPaper() {
         Bitmap imageBitmap = BitmapFactory.decodeFile(filePath);
@@ -177,7 +223,7 @@ public class PictureEditActivity extends AppCompatActivity {
 
         SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
         String rectStr = String.format("%d,%d,%d,%d", visibleRect.left, visibleRect.top, visibleRect.right, visibleRect.bottom);
-        preferencesEditor.putString(fileName, rectStr);
+        preferencesEditor.putString(imageModel.getName(), rectStr);
         preferencesEditor.apply();
         Toast.makeText(this, "Wallpaper is set!", Toast.LENGTH_LONG).show();
     }

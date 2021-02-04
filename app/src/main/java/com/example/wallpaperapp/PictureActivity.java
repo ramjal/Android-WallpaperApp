@@ -19,29 +19,34 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import org.parceler.Parcels;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 public class PictureActivity extends AppCompatActivity implements ImagesRecViewAdapter.OnPictureClickListener {
 
     private static final String LOG_TAG = PictureActivity.class.getSimpleName();
-    private static final int MY_REQEST_CODE = 1234;
-    public static final String FILE_PATH = "FILE_PATH";
-    public static final String FILE_NAME = "FILE_NAME";
+    private static final int ADD_IMAGE_REQUEST = 1;
+    private static final int EDIT_IMAGE_REQUEST = 2;
+    public static final String IMAGE_MODEL = "wallpaperapp.IMAGE_MODEL";
+    public static final String MESSAGE_REPLY = "wallpaperapp.MESSAGE_REPLY";
 
     private RecyclerView recviewImageList;
     private OutputStream outputStream;
     private ImagesRecViewAdapter recviewAdapter;
+    private int lastPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picture);
 
+        lastPosition = -1;
         recviewImageList = findViewById(R.id.recviewImageList);
-
         recviewAdapter = new ImagesRecViewAdapter(this, this);
         recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
         recviewImageList.setAdapter(recviewAdapter);
@@ -86,19 +91,50 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), MY_REQEST_CODE);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), ADD_IMAGE_REQUEST);
     }
 
+    //implemented ImagesRecViewAdapter.OnPictureClickListener
+    @Override
+    public void onPictureClick(int position) {
+        Intent intent = new Intent(this, PictureEditActivity.class);
+        ImageModel image = ImageUtils.getImagesList(this).get(position);
+        lastPosition = position;
+        intent.putExtra(IMAGE_MODEL, Parcels.wrap(image));
+        startActivityForResult(intent, EDIT_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onPictureLongClick(int position) {
+        Toast.makeText(this, "Long clicked!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MY_REQEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (data != null) {
-                    addImageFileToAppStorage(data.getData());
+        switch (requestCode) {
+            case ADD_IMAGE_REQUEST:
+                if (resultCode == Activity.RESULT_OK) {
+                    if (data != null) {
+                        addImageFileToAppStorage(data.getData());
+                    }
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+                    Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show();
                 }
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show();
-            }
+                break;
+            case EDIT_IMAGE_REQUEST:
+                //Toast.makeText(this, String.format("Form Edit - %d", resultCode) , Toast.LENGTH_SHORT).show();
+                if (resultCode == RESULT_OK) {
+                    String message = data.getStringExtra(MESSAGE_REPLY);
+                    if (message != null && lastPosition >= 0) {
+                        recviewAdapter.getImagesList().remove(lastPosition);
+                        recviewAdapter.notifyItemRemoved(lastPosition);
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+            default:
+                // Do nothing
         }
     }
 
@@ -127,13 +163,5 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         }
     }
 
-    //implemented ImagesRecViewAdapter.OnPictureClickListener
-    @Override
-    public void onPictureClick(int position) {
-        Intent intent = new Intent(this, PictureEditActivity.class);
-        ImageModel image = ImageUtils.getImagesList(this).get(position);
-        intent.putExtra(FILE_PATH, image.getFile().getAbsolutePath());
-        intent.putExtra(FILE_NAME, image.getName());
-        startActivity(intent);
-    }
+
 }

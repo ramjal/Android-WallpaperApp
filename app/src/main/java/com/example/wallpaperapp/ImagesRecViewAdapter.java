@@ -239,7 +239,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         notifyDataSetChanged();
     }
 
-    public static ArrayList<ImageModel> getImagesList() {
+    public ArrayList<ImageModel> getImagesList() {
         return imagesList;
     }
 
@@ -272,5 +272,6 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     //The activity should implement this listener
     public interface OnPictureClickListener {
         void onPictureClick(int position);
+        void onPictureLongClick(int position);
     }
 }

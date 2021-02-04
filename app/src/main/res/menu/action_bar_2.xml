@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_set_2"
+        android:id="@+id/action_delete_2"
         android:orderInCategory="100"
-        android:title="Set"
-        android:icon="@drawable/ic_check_circle"
+        android:title="Delete"
+        android:icon="@drawable/ic_action_delete"
         app:showAsAction="always" />
 
     <item
@@ -14,6 +14,14 @@
         android:orderInCategory="200"
         android:title="Info"
         android:icon="@drawable/ic_action_info"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_set_2"
+        android:orderInCategory="300"
+        android:title="Set"
+        android:icon="@drawable/ic_check_circle"
+        app:showAsAction="always" />
+
 
 </menu>
