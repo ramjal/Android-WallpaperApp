@@ -33,7 +33,7 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
     private static final int ADD_IMAGE_REQUEST = 1;
     private static final int EDIT_IMAGE_REQUEST = 2;
     public static final String IMAGE_MODEL = "wallpaperapp.IMAGE_MODEL";
-    public static final String MESSAGE_REPLY = "wallpaperapp.MESSAGE_REPLY";
+    public static final String DELETE_MESSAGE = "wallpaperapp.DELETE_MESSAGE";
 
     private RecyclerView recviewImageList;
     private OutputStream outputStream;
@@ -104,6 +104,7 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         startActivityForResult(intent, EDIT_IMAGE_REQUEST);
     }
 
+    //implemented ImagesRecViewAdapter.OnPictureClickListener
     @Override
     public void onPictureLongClick(int position) {
         Toast.makeText(this, "Long clicked!", Toast.LENGTH_SHORT).show();
@@ -125,11 +126,12 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
             case EDIT_IMAGE_REQUEST:
                 //Toast.makeText(this, String.format("Form Edit - %d", resultCode) , Toast.LENGTH_SHORT).show();
                 if (resultCode == RESULT_OK) {
-                    String message = data.getStringExtra(MESSAGE_REPLY);
+                    String message = data.getStringExtra(DELETE_MESSAGE);
                     if (message != null && lastPosition >= 0) {
                         recviewAdapter.getImagesList().remove(lastPosition);
                         recviewAdapter.notifyItemRemoved(lastPosition);
                         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                        lastPosition = -1;
                     }
                 }
                 break;

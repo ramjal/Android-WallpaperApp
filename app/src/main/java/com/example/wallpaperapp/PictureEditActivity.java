@@ -119,30 +119,17 @@ public class PictureEditActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        String message;
-
-        Rect rect = new Rect(0,0,0,0);
         rectF = ImageUtils.getImageBounds(imgView2Edit);
-        rectF.round(rect);
-
         BitmapFactory.Options options = ImageUtils.getImageOptions(filePath);
-
         scale = (rectF.right - rectF.left) / options.outWidth;
 
         int id = item.getItemId();
         switch (id) {
             case R.id.action_set_2:
-//                message = String.format("x=%f, y=%f, scale=%f", currentX, currentY, currentScale);
-//                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
                 setWallPaper();
                 return true;
             case R.id.action_info_2:
-                message = String.format("currentX=%f, currentY=%f, currentScale%f\nleft=%d, top=%d\nright=%d, bottom=%d\nwidth=%d, height=%d\nscale=%f",
-                        currentX, currentY, currentScale, rect.left, rect.top, rect.right, rect.bottom, options.outWidth, options.outHeight, scale);
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                displayImageInfo(options);
                 return true;
             case R.id.action_delete_2:
                 handleDelete();
@@ -152,38 +139,12 @@ public class PictureEditActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void handleDelete() {
-        //Toast.makeText(mainContext, imagesList.get(position).getName() + " Long Pressed!", Toast.LENGTH_SHORT).show();
-        AlertDialog.Builder myAlterDialog = new AlertDialog.Builder(this);
-        myAlterDialog.setTitle("Delete Image");
-        myAlterDialog.setMessage("Are you sure you want to delete this image?");
-
-        // Add the dialog buttons.
-        myAlterDialog.setPositiveButton("Yes", new
-                DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            imageModel.file.delete();
-                            Intent replyIntent = new Intent();
-                            replyIntent.putExtra(PictureActivity.MESSAGE_REPLY, imageModel.getName() + " is now deleted!");
-                            setResult(RESULT_OK, replyIntent);
-                            finish();
-                            //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(PictureEditActivity.this, "!!!Error - Cannot Delete " + imageModel.getName(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-        myAlterDialog.setNegativeButton("No", new
-                DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " - Pressed Cancel", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        // Create and show the AlertDialog.
-        myAlterDialog.show();
+    private void displayImageInfo(BitmapFactory.Options options) {
+        Rect rect = new Rect(0,0,0,0);
+        rectF.round(rect);
+        String message = String.format("file=%s\nleft=%d, top=%d\nright=%d, bottom=%d\nwidth=%d, height=%d\nscale=%f",
+                imageModel.getName(), rect.left, rect.top, rect.right, rect.bottom, options.outWidth, options.outHeight, scale);
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     private void setWallPaper() {
@@ -227,6 +188,42 @@ public class PictureEditActivity extends AppCompatActivity {
         preferencesEditor.apply();
         Toast.makeText(this, "Wallpaper is set!", Toast.LENGTH_LONG).show();
     }
+
+
+    private void handleDelete() {
+        //Toast.makeText(mainContext, imagesList.get(position).getName() + " Long Pressed!", Toast.LENGTH_SHORT).show();
+        AlertDialog.Builder myAlterDialog = new AlertDialog.Builder(this);
+        myAlterDialog.setTitle("Delete Image");
+        myAlterDialog.setMessage("Are you sure you want to delete this image?");
+
+        // Add the dialog buttons.
+        myAlterDialog.setPositiveButton("Yes", new
+                DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            imageModel.file.delete();
+                            Intent replyIntent = new Intent();
+                            replyIntent.putExtra(PictureActivity.DELETE_MESSAGE, imageModel.getName() + " is now deleted!");
+                            setResult(RESULT_OK, replyIntent);
+                            finish();
+                            //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(PictureEditActivity.this, "!!!Error - " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+        myAlterDialog.setNegativeButton("No", new
+                DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " - Pressed Cancel", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        // Create and show the AlertDialog.
+        myAlterDialog.show();
+    }
+
 
     //Clean up extra bars from the top and the buttom
     private void removeStatusAndNavBar() {
