@@ -1,54 +1,42 @@
 package com.example.wallpaperapp;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
-import android.app.WallpaperManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.ArraySet;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.parceler.Parcels;
 
-import java.io.File;
+import java.util.Locale;
+import java.util.Objects;
 
 
 public class PictureEditActivity extends AppCompatActivity {
     private final String DEBUG_TAG = PictureEditActivity.class.getSimpleName();
     private SharedPreferences sharedPreferences;
-    private final Float MIN_SIZE = 0.5F;
-    private final Float MAX_SIZE = 4f;
     private ImageView imgView2Edit;
-    private Matrix mMatrix = new Matrix();
+    private final Matrix matrix = new Matrix();
     private String filePath;
     private ImageModel imageModel;
     private Float currentScale = 1f;
@@ -103,9 +91,9 @@ public class PictureEditActivity extends AppCompatActivity {
         //mScaleGestureDetector.setQuickScaleEnabled(false);
         mGestureDetector = new GestureDetector(this, new ScrollListener());
         imgView2Edit.setOnTouchListener(new ImageOnTouchListener());
-        mMatrix.setScale(currentScale, currentScale);
-        mMatrix.postTranslate(-currentX, -currentY);
-        imgView2Edit.setImageMatrix(mMatrix);
+        matrix.setScale(currentScale, currentScale);
+        matrix.postTranslate(-currentX, -currentY);
+        imgView2Edit.setImageMatrix(matrix);
     }
 
 
@@ -124,17 +112,16 @@ public class PictureEditActivity extends AppCompatActivity {
         scale = (rectF.right - rectF.left) / options.outWidth;
 
         int id = item.getItemId();
-        switch (id) {
-            case R.id.action_set_2:
-                setWallPaper();
-                return true;
-            case R.id.action_info_2:
-                displayImageInfo(options);
-                return true;
-            case R.id.action_delete_2:
-                handleDelete();
-            default:
-                // Do nothing
+        if (id == R.id.action_set_2) {
+            setWallPaper();
+            return true;
+        } else if (id == R.id.action_info_2) {
+            displayImageInfo(options);
+            return true;
+        } else if (id == R.id.action_delete_2) {
+            handleDelete();
+
+            // Do nothing
         }
         return super.onOptionsItemSelected(item);
     }
@@ -142,7 +129,7 @@ public class PictureEditActivity extends AppCompatActivity {
     private void displayImageInfo(BitmapFactory.Options options) {
         Rect rect = new Rect(0,0,0,0);
         rectF.round(rect);
-        String message = String.format("file=%s\nleft=%d, top=%d\nright=%d, bottom=%d\nwidth=%d, height=%d\nscale=%f",
+        String message = String.format(Locale.CANADA, "file=%s\nleft=%d, top=%d\nright=%d, bottom=%d\nwidth=%d, height=%d\nscale=%f",
                 imageModel.getName(), rect.left, rect.top, rect.right, rect.bottom, options.outWidth, options.outHeight, scale);
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
@@ -183,7 +170,7 @@ public class PictureEditActivity extends AppCompatActivity {
         ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
 
         SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
-        String rectStr = String.format("%d,%d,%d,%d", visibleRect.left, visibleRect.top, visibleRect.right, visibleRect.bottom);
+        String rectStr = String.format(Locale.CANADA, "%d,%d,%d,%d", visibleRect.left, visibleRect.top, visibleRect.right, visibleRect.bottom);
         preferencesEditor.putString(imageModel.getName(), rectStr);
         preferencesEditor.apply();
         Toast.makeText(this, "Wallpaper is set!", Toast.LENGTH_LONG).show();
@@ -201,12 +188,13 @@ public class PictureEditActivity extends AppCompatActivity {
                 DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         try {
-                            imageModel.file.delete();
-                            Intent replyIntent = new Intent();
-                            replyIntent.putExtra(PictureActivity.DELETE_MESSAGE, imageModel.getName() + " is now deleted!");
-                            setResult(RESULT_OK, replyIntent);
-                            finish();
-                            //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
+                            if (imageModel.file.delete()) {
+                                Intent replyIntent = new Intent();
+                                replyIntent.putExtra(PictureActivity.DELETE_MESSAGE, imageModel.getName() + " is now deleted!");
+                                setResult(RESULT_OK, replyIntent);
+                                finish();
+                                //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                             Toast.makeText(PictureEditActivity.this, "!!!Error - " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -227,20 +215,18 @@ public class PictureEditActivity extends AppCompatActivity {
 
     //Clean up extra bars from the top and the buttom
     private void removeStatusAndNavBar() {
-        getSupportActionBar().hide(); //hide the title bar
+        Objects.requireNonNull(getSupportActionBar()).hide(); //hide the title bar
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            getWindow().setFlags(
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            );
-        }
+        getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        );
     }
 
 
     //remove the Title from actoin bar
     private void clearTitle() {
-        getSupportActionBar().setTitle("");
+        Objects.requireNonNull(getSupportActionBar()).setTitle("");
     }
 
     //region Inner Classes
@@ -253,10 +239,12 @@ public class PictureEditActivity extends AppCompatActivity {
                 newFactor = 1;
             }
             currentScale = currentScale * newFactor;
+            float MIN_SIZE = 0.5F;
+            float MAX_SIZE = 4f;
             currentScale = Math.max(MIN_SIZE, Math.min(currentScale, MAX_SIZE));
-            mMatrix.setScale(currentScale, currentScale, detector.getFocusX(), detector.getFocusY());
-            mMatrix.postTranslate(-currentX, -currentY);
-            imgView2Edit.setImageMatrix(mMatrix);
+            matrix.setScale(currentScale, currentScale, detector.getFocusX(), detector.getFocusY());
+            matrix.postTranslate(-currentX, -currentY);
+            imgView2Edit.setImageMatrix(matrix);
             return true;
         }
 
@@ -295,8 +283,8 @@ public class PictureEditActivity extends AppCompatActivity {
 
             currentX += distanceX;
             currentY += distanceY;
-            mMatrix.postTranslate(-distanceX, -distanceY);
-            imgView2Edit.setImageMatrix(mMatrix);
+            matrix.postTranslate(-distanceX, -distanceY);
+            imgView2Edit.setImageMatrix(matrix);
 
             return true;
         }
@@ -308,8 +296,20 @@ public class PictureEditActivity extends AppCompatActivity {
         public boolean onTouch(View v, MotionEvent event) {
             mScaleGestureDetector.onTouchEvent(event);
             mGestureDetector.onTouchEvent(event);
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    //do nothing
+                    break;
+                case MotionEvent.ACTION_UP:
+                    v.performClick();
+                    break;
+                default:
+                    break;
+            }
             return true;
         }
+
+
     }
     //endregion
 }
