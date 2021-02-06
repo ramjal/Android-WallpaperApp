@@ -2,6 +2,7 @@ package com.example.wallpaperapp;
 
 import android.app.WallpaperManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
@@ -27,6 +28,7 @@ public class ImageUtils {
     private static final String LOG_TAG = ImageUtils.class.getSimpleName();
 
     public static ArrayList<ImageModel> getImagesList(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE);
         ArrayList<ImageModel> imageList = new ArrayList<>();
         File dir = getAppSpecificPictureStorageDir(context);
         if (dir != null && dir.exists()) {
@@ -35,7 +37,8 @@ public class ImageUtils {
                 Log.e(LOG_TAG, "No file found in " + dir.getAbsolutePath());
             } else {
                 for (File file : allFiles) {
-                    imageList.add(new ImageModel(file, file.getName()));
+                    String rectStr = sharedPreferences.getString(file.getName(), null);
+                    imageList.add(new ImageModel(file, file.getName(), rectStr));
                 }
             }
         }

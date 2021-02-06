@@ -1,5 +1,7 @@
 package com.example.wallpaperapp;
 
+import android.graphics.Rect;
+
 import org.parceler.Parcel;
 
 import java.io.File;
@@ -12,6 +14,7 @@ public class ImageModel {
     // for @Parcel fields must be package private
     File file;
     String name;
+    String rectStr;
 
     // empty constructor is needed by the Parceler library
     public ImageModel() {
@@ -33,8 +36,9 @@ public class ImageModel {
         this.name = name;
     }
 
-    public ImageModel(File file, String name) {
+    public ImageModel(File file, String name, String rectStr) {
         this.file = file;
         this.name = name;
+        this.rectStr = rectStr;
     }
 }

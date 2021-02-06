@@ -12,8 +12,8 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,7 +36,7 @@ public class PictureEditActivity extends AppCompatActivity {
     private final String DEBUG_TAG = PictureEditActivity.class.getSimpleName();
     private SharedPreferences sharedPreferences;
     private ImageView imgView2Edit;
-    private final Matrix matrix = new Matrix();
+    private Matrix matrix;
     private String filePath;
     private ImageModel imageModel;
     private Float currentScale = 1f;
@@ -44,8 +44,8 @@ public class PictureEditActivity extends AppCompatActivity {
     private Float currentY = 0f;
     private float scale = 1f;
     private RectF rectF;
-    private int mDisplayWidth;
-    private int mDisplayHeight;
+    private int displayWidth;
+    private int displayHeight;
     private ScaleGestureDetector mScaleGestureDetector;
     private GestureDetector mGestureDetector;
 
@@ -69,13 +69,9 @@ public class PictureEditActivity extends AppCompatActivity {
     private void setupVariables() {
         Point size = new Point();
         getDisplay().getRealSize(size);
-        mDisplayWidth = size.x;
-        mDisplayHeight = size.y;
+        displayWidth = size.x;
+        displayHeight = size.y;
         imgView2Edit = findViewById(R.id.imgView2Edit);
-        //Get the file path to the image
-        //filePath = getIntent().getStringExtra(PictureActivity.FILE_PATH);
-        //fileName = getIntent().getStringExtra(PictureActivity.FILE_NAME);
-
         imageModel = (ImageModel) Parcels.unwrap(getIntent().getParcelableExtra(PictureActivity.IMAGE_MODEL));
         filePath = imageModel.getFile().getAbsolutePath();
     }
@@ -91,9 +87,50 @@ public class PictureEditActivity extends AppCompatActivity {
         //mScaleGestureDetector.setQuickScaleEnabled(false);
         mGestureDetector = new GestureDetector(this, new ScrollListener());
         imgView2Edit.setOnTouchListener(new ImageOnTouchListener());
-        matrix.setScale(currentScale, currentScale);
-        matrix.postTranslate(-currentX, -currentY);
+
+        matrix = createImageMartix(imgView2Edit, imageModel);
+        //matrix.setScale(currentScale, currentScale);
+        //matrix.postTranslate(-currentX, -currentY);
         imgView2Edit.setImageMatrix(matrix);
+    }
+
+
+    private Matrix createImageMartix(ImageView imageView, ImageModel image) {
+        Matrix matrix = null;
+
+        String imagePath = image.getFile().getAbsolutePath();
+        //image.rectStr = sharedPreferences.getString(image.getName(), null);
+        if (image.rectStr != null) {
+            BitmapFactory.Options options = ImageUtils.getImageOptions(imagePath);
+            DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+            int imageViewWidth = displayWidth;//displayMetrics.widthPixels;
+            int imageViewHeight = displayHeight;//displayMetrics.heightPixels;
+            float aspectImageView = (float) imageViewWidth / imageViewHeight;
+            float aspectPicture = (float) options.outWidth / options.outHeight;
+            float scale = 1f;
+
+            if (aspectImageView > aspectPicture) {
+                scale = (float) imageViewWidth / options.outWidth;
+            } else {
+                scale = (float) imageViewHeight / options.outHeight;
+            }
+
+            String[] arrayRect = image.rectStr.split(",");
+            if (arrayRect.length == 4) {
+                //RectF imageRect = new RectF(274, 318, 419, 624);
+                RectF imageRect = new RectF(Integer.parseInt(arrayRect[0]) * scale,
+                        Integer.parseInt(arrayRect[1]) * scale,
+                        Integer.parseInt(arrayRect[2]) * scale,
+                        Integer.parseInt(arrayRect[3]) * scale);
+                RectF viewRect = new RectF(0, 0, imageViewWidth, imageViewHeight);
+                matrix = new Matrix();
+                boolean result = matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
+            }
+        }
+        if (matrix == null) {
+            matrix = new Matrix();
+        }
+        return matrix;
     }
 
 
@@ -145,13 +182,8 @@ public class PictureEditActivity extends AppCompatActivity {
         int left = Math.max(Math.round(-rectF.left / scale), 0);
         int top = Math.max(Math.round(-rectF.top / scale), 0);
 
-        int right = left + Math.round(mDisplayWidth / scale);
-        int bottom = top + Math.round(mDisplayHeight / scale);
-
-//        left = 400;
-//        top = 0;
-//        right = 600;
-//        bottom = 450;
+        int right = left + Math.round(displayWidth / scale);
+        int bottom = top + Math.round(displayHeight / scale);
 
         Rect visibleRect = new Rect(left, top, right, bottom);
         //visibleRect = null;
@@ -223,7 +255,6 @@ public class PictureEditActivity extends AppCompatActivity {
         );
     }
 
-
     //remove the Title from actoin bar
     private void clearTitle() {
         Objects.requireNonNull(getSupportActionBar()).setTitle("");
@@ -259,12 +290,12 @@ public class PictureEditActivity extends AppCompatActivity {
                 currentX += (rectF.left * currentScale);
             }
 
-            if (rectF.right < mDisplayWidth) {
-                currentX -= ((mDisplayWidth - rectF.right) * currentScale);
+            if (rectF.right < displayWidth) {
+                currentX -= ((displayWidth - rectF.right) * currentScale);
             }
 
-            if (rectF.bottom < mDisplayHeight) {
-                currentY -= ((mDisplayHeight - rectF.bottom) * currentScale);
+            if (rectF.bottom < displayHeight) {
+                currentY -= ((displayHeight - rectF.bottom) * currentScale);
             }
         }
     }
@@ -274,10 +305,10 @@ public class PictureEditActivity extends AppCompatActivity {
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             rectF = ImageUtils.getImageBounds(imgView2Edit);
 
-            if (rectF.left > distanceX || rectF.right - distanceX < mDisplayWidth) {
+            if (rectF.left > distanceX || rectF.right - distanceX < displayWidth) {
                 distanceX = 0;
             }
-            if (rectF.top > distanceY || rectF.bottom - distanceY < mDisplayHeight) {
+            if (rectF.top > distanceY || rectF.bottom - distanceY < displayHeight) {
                 distanceY = 0;
             }
 

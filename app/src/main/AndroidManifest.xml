@@ -25,14 +25,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PictureActivity"
-            android:parentActivityName=".MainActivity">
+            android:name=".PictureActivity">
 
         </activity>
         <activity
             android:name=".PictureEditActivity"
-            android:theme="@style/Theme.TranslucentBars"
-            android:parentActivityName=".PictureActivity">
+            android:theme="@style/Theme.TranslucentBars">
         </activity>
         <!-- android:theme="@style/Theme.TranslucentBars" -->
     </application>

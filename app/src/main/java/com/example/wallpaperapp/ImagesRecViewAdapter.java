@@ -8,10 +8,9 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.Build;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,12 +40,10 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     private SharedPreferences sharedPreferences;
     private static ArrayList<ImageModel> imagesList;
     private Context mainContext;
-    private DisplayMetrics displayMetrics;
     private OnPictureClickListener onPictureClickListener;
 
     public ImagesRecViewAdapter(Context context, OnPictureClickListener onPictureClickListener) {
         mainContext = context;
-        displayMetrics = mainContext.getResources().getDisplayMetrics();
         this.onPictureClickListener = onPictureClickListener;
         //Get the shared preferences for reading app saved data
         sharedPreferences = mainContext.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
@@ -101,8 +98,8 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         Matrix matrix = null;
 
         String imagePath = image.getFile().getAbsolutePath();
-        String rectStr = sharedPreferences.getString(image.getName(), null);
-        if (rectStr != null) {
+        //image.rectStr = sharedPreferences.getString(image.getName(), null);
+        if (image.rectStr != null) {
             BitmapFactory.Options options = ImageUtils.getImageOptions(imagePath);
             int imageViewWidth = imageView.getLayoutParams().width;
             int imageViewHeight = imageView.getLayoutParams().height;
@@ -116,7 +113,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
                 scale = (float) imageViewHeight / options.outHeight;
             }
 
-            String[] arrayRect = rectStr.split(",");
+            String[] arrayRect = image.rectStr.split(",");
             if (arrayRect.length == 4) {
                 //RectF imageRect = new RectF(274, 318, 419, 624);
                 RectF imageRect = new RectF(Integer.parseInt(arrayRect[0]) * scale,
@@ -151,51 +148,8 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
             dx = (ImageUtils.getImageOptions(imagePath).outWidth * ratio - imageView.getLayoutParams().width) / 2;
         }
 
-        //mMatrix.setScale(currentScale, currentScale);
         matrix.postTranslate(-dx, -dy);
         return matrix;
-    }
-
-    private void setWallPaper(Bitmap imageBitmap) {
-        WallpaperManager myWallpaperManager = WallpaperManager.getInstance(mainContext);
-
-        int displayWidth = displayMetrics.widthPixels;
-        int displayHeight = displayMetrics.heightPixels;
-        int imageWidth = imageBitmap.getWidth();
-        int imageHeight = imageBitmap.getHeight();
-        int left = 0;
-        int top = 0;
-        int right = imageWidth;
-        int bottom = imageHeight;
-        if (imageWidth > displayWidth) {
-            left = (imageWidth - displayWidth) / 2;
-            right = left + imageWidth;
-        }
-
-        int dw = myWallpaperManager.getDesiredMinimumWidth();
-        int dh = myWallpaperManager.getDesiredMinimumHeight();
-
-        Rect visibleRect = new Rect(left, top, right, bottom);
-        //visibleRect = null;
-
-
-        // https://stackoverflow.com/questions/7383361/android-wallpapermanager-crops-image
-
-
-        String message = String.format("displayWidth = %d, displayHeight = %d" +
-                        "\nimageWidth = %d, imageHeight = %d" +
-                        "\nleft = %d, right = %d",
-                displayWidth, displayHeight, imageWidth, imageHeight, left, right);
-
-        //"Wallpaper Set!"
-        try {
-            if (myWallpaperManager.setBitmap(imageBitmap, visibleRect, false, FLAG_LOCK) > 0) {
-                Toast.makeText(mainContext, message, Toast.LENGTH_LONG).show();
-            }
-        } catch (IOException e) {
-            Toast.makeText(mainContext, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            e.printStackTrace();
-        }
     }
 
     private void handleDelete(int position) {
@@ -243,7 +197,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         return imagesList;
     }
 
-    public class PictureViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class PictureViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         private final CardView cardView;
         private final RelativeLayout parentOfImage;
         private final ImageView imageViewItem;
@@ -256,10 +210,16 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
             imageViewItem = itemView.findViewById(R.id.imgViewItem);
             this.onPictureClickListener = onPictureClickListener;
             //Make each image 1/3 of the screen width
-            imageViewItem.getLayoutParams().width = displayMetrics.widthPixels / 3;
-            imageViewItem.getLayoutParams().height = imageViewItem.getLayoutParams().width * displayMetrics.heightPixels / displayMetrics.widthPixels;
-            //Should implement onClick
+            Point size = new Point();
+            mainContext.getDisplay().getRealSize(size);
+            int displayWidth = size.x;
+            int displayHeight = size.y;
+            imageViewItem.getLayoutParams().width = displayWidth / 3;
+            imageViewItem.getLayoutParams().height = imageViewItem.getLayoutParams().width * displayHeight / displayWidth;
+
+            //Should implement onClick and onLongClick
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
         }
 
         //when itemView clicked it calls on OnPictureClickListener.onPictureClick
@@ -267,11 +227,17 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         public void onClick(View v) {
             onPictureClickListener.onPictureClick(getAdapterPosition());
         }
+
+
+        @Override
+        public boolean onLongClick(View v) {
+            return onPictureClickListener.onPictureLongClick(getAdapterPosition());
+        }
     }
 
     //The activity should implement this listener
     public interface OnPictureClickListener {
         void onPictureClick(int position);
-        void onPictureLongClick(int position);
+        boolean onPictureLongClick(int position);
     }
 }

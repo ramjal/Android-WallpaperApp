@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -106,8 +105,9 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
 
     //implemented ImagesRecViewAdapter.OnPictureClickListener
     @Override
-    public void onPictureLongClick(int position) {
+    public boolean onPictureLongClick(int position) {
         Toast.makeText(this, "Long clicked!", Toast.LENGTH_SHORT).show();
+        return true;
     }
 
     @Override
