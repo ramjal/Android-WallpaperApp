@@ -2,6 +2,7 @@ package com.example.wallpaperapp;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     static public final String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
 
+    private Context appContext;
     private Spinner spnInerval;
     private TextView txtIndex;
     private TextView textLabel;
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        appContext = this.getApplication();
         selectedIntervalHour = 1;
         pictureIndex = 0;
 
@@ -68,7 +71,8 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences = getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
 
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        alarmIntent = new Intent(this, AlarmReceiver.class);
+        //Here we pass appContext instead of this just to have less memory leak application context is smaller than the activity context
+        alarmIntent = new Intent(appContext, AlarmReceiver.class);
         setSpinnerData();
         checkToggleButton();
     }
@@ -98,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
     private void checkToggleButton() {
         if (alarmIntent == null) return;
 
-        alarmPendingIntent = PendingIntent.getBroadcast(this,
+        alarmPendingIntent = PendingIntent.getBroadcast(appContext,
                 PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_NO_CREATE);
 
         if (alarmPendingIntent != null) {
@@ -122,10 +126,10 @@ public class MainActivity extends AppCompatActivity {
         intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24*7);
 
         ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
-                                    this, R.layout.spinner_item, intervalsText);
+                                    appContext, R.layout.spinner_item, intervalsText);
 //
 //        ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
-//                this, android.R.layout.simple_spinner_dropdown_item, intervalsText);
+//                appContext, android.R.layout.simple_spinner_dropdown_item, intervalsText);
                                              //simple_spinner_item
                                              //simple_dropdown_item_1line
                                              //simple_selectable_list_item
@@ -139,13 +143,13 @@ public class MainActivity extends AppCompatActivity {
         //long repeatInterval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
         //long repeatInterval = selectedIntervalHour * 3600 * 1000;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
-        alarmIntent.putExtra(IMAGE_PATH_ARRAY, getImagesNameArray(ImageUtils.getImagesList(this)));
-        alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,
+        alarmIntent.putExtra(IMAGE_PATH_ARRAY, getImagesNameArray(ImageUtils.getImagesList(appContext)));
+        alarmPendingIntent = PendingIntent.getBroadcast(appContext,
                 PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (alarmManager != null && alarmPendingIntent != null) {
             alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     triggerTime, repeatInterval, alarmPendingIntent);
-            Toast.makeText(MainActivity.this, "Alarm is On", Toast.LENGTH_SHORT).show();
+            Toast.makeText(appContext, "Alarm is On", Toast.LENGTH_SHORT).show();
             spnInerval.setEnabled(false);
         }
     }
@@ -154,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
         if (alarmManager != null && alarmPendingIntent != null) {
             alarmManager.cancel(alarmPendingIntent);
             alarmPendingIntent.cancel();
-            Toast.makeText(MainActivity.this, "Alarm is Off!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(appContext, "Alarm is Off!", Toast.LENGTH_SHORT).show();
             spnInerval.setEnabled(true);
         }
     }
@@ -185,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void btnImagesClicked(View view) {
-        Intent intent = new Intent(this, PictureActivity.class);
+        Intent intent = new Intent(appContext, PictureActivity.class);
         startActivity(intent);
     }
 
