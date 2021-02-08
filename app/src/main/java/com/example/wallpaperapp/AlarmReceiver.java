@@ -48,42 +48,34 @@ public class AlarmReceiver extends BroadcastReceiver {
             return;
         }
 
-        String time = new SimpleDateFormat("HH:mm").format(new Date());
         //Get a random index of the image list
         //int index = new Random().nextInt(imagesNameList.length);
 
-        String message = String.format("Wallpaper set with image index=%d at %s", pictureIndex, time);
-        WallpaperManager myWallpaperManager = WallpaperManager.getInstance(context);
         try {
             if (pictureIndex >= imagesPathList.length) {
                 pictureIndex = 0;
             }
-            String imagePath = imagesPathList[pictureIndex];
-            File imageFile = new File(imagePath);
-            String rectStr = mPreferences.getString(imageFile.getName(), null);
-            Rect imageRect = null;
-            if (rectStr != null) {
-                String[] arrayRect = rectStr.split(",");
-                if (arrayRect.length == 4) {
-                    imageRect = new Rect(Integer.parseInt(arrayRect[0]),
-                                            Integer.parseInt(arrayRect[1]),
-                                            Integer.parseInt(arrayRect[2]),
-                                            Integer.parseInt(arrayRect[3]));
-                }
-            }
-
-            Bitmap imgBitmap = BitmapFactory.decodeFile(imagePath);
-            if (ImageUtils.setWallPaper(imgBitmap, context, imageRect)) {
-                Log.i(LOG_TAG, message);
-                pictureIndex++;
-                SharedPreferences.Editor preferencesEditor = mPreferences.edit();
-                preferencesEditor.putInt(MainActivity.IMAGE_INDEX, pictureIndex);
-                preferencesEditor.apply();
+            if (ImageUtils.setWallPaper(imagesPathList[pictureIndex], context)) {
+                LogSuccessMessage();
+                SaveNewPictureIndex();
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void LogSuccessMessage() {
+        String time = new SimpleDateFormat("HH:mm").format(new Date());
+        String message = String.format("Wallpaper set with image index=%d at %s", pictureIndex, time);
+        Log.i(LOG_TAG, message);
+    }
+
+    private void SaveNewPictureIndex() {
+        pictureIndex++;
+        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
+        preferencesEditor.putInt(MainActivity.IMAGE_INDEX, pictureIndex);
+        preferencesEditor.apply();
     }
 
 }

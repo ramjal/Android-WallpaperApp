@@ -67,16 +67,31 @@ public class ImageUtils {
         return dir;
     }
 
+    public static boolean setWallPaper(String imagePath, Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
+        Bitmap imageBitmap = BitmapFactory.decodeFile(imagePath);
+        File imageFile = new File(imagePath);
+        String rectStr = sharedPreferences.getString(imageFile.getName(), null);
+        Rect imageRect = null;
+        if (rectStr != null) {
+            String[] arrayRect = rectStr.split(",");
+            if (arrayRect.length == 4) {
+                imageRect = new Rect(Integer.parseInt(arrayRect[0]),
+                        Integer.parseInt(arrayRect[1]),
+                        Integer.parseInt(arrayRect[2]),
+                        Integer.parseInt(arrayRect[3]));
+            }
+        }
+        return setWallPaper(imageBitmap, context, imageRect);
+    }
+
     public static boolean setWallPaper(Bitmap imageBitmap, Context context,  Rect visibleRect) {
         boolean bRet = false;
         try {
             WallpaperManager myWallpaperManager = WallpaperManager.getInstance(context);
             bRet = (myWallpaperManager.setBitmap(imageBitmap, visibleRect, false, FLAG_LOCK) > 0);
-            if (bRet) {
-                Toast.makeText(context, "Wallpaper set!", Toast.LENGTH_SHORT).show();
-            }
         } catch (IOException e) {
-            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e(LOG_TAG, "Error: " + e.getMessage());
             e.printStackTrace();
         }
         return bRet;
