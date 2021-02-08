@@ -7,15 +7,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static android.app.WallpaperManager.FLAG_LOCK;
+import static android.content.Context.MODE_PRIVATE;
 
 public class AlarmReceiver extends BroadcastReceiver {
     private static final String LOG_TAG = AlarmReceiver.class.getSimpleName();
@@ -28,7 +32,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onReceive(Context context, Intent intent) {
-        mPreferences = context.getSharedPreferences(SHARED_PREF_FILE_NAME, context.MODE_PRIVATE);
+        mPreferences = context.getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
 
         if (mPreferences != null) {
             pictureIndex = mPreferences.getInt(MainActivity.IMAGE_INDEX, 0);
@@ -54,8 +58,22 @@ public class AlarmReceiver extends BroadcastReceiver {
             if (pictureIndex >= imagesPathList.length) {
                 pictureIndex = 0;
             }
-            Bitmap imgBitmap = BitmapFactory.decodeFile(imagesPathList[pictureIndex]);
-            if (myWallpaperManager.setBitmap(imgBitmap, null, false, FLAG_LOCK) > 0) {
+            String imagePath = imagesPathList[pictureIndex];
+            File imageFile = new File(imagePath);
+            String rectStr = mPreferences.getString(imageFile.getName(), null);
+            Rect imageRect = null;
+            if (rectStr != null) {
+                String[] arrayRect = rectStr.split(",");
+                if (arrayRect.length == 4) {
+                    imageRect = new Rect(Integer.parseInt(arrayRect[0]),
+                                            Integer.parseInt(arrayRect[1]),
+                                            Integer.parseInt(arrayRect[2]),
+                                            Integer.parseInt(arrayRect[3]));
+                }
+            }
+
+            Bitmap imgBitmap = BitmapFactory.decodeFile(imagePath);
+            if (ImageUtils.setWallPaper(imgBitmap, context, imageRect)) {
                 Log.i(LOG_TAG, message);
                 pictureIndex++;
                 SharedPreferences.Editor preferencesEditor = mPreferences.edit();

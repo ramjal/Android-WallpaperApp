@@ -135,8 +135,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void startAlarm() {
         if (isAlarmAlreadySet) return;
-        //long repeatInterval = 5000;
-        long repeatInterval = 30000; //selectedIntervalHour * 3600 * 1000; //AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+        //long repeatInterval = 30000;
+        //long repeatInterval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+        long repeatInterval = selectedIntervalHour * 3600 * 1000;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
         alarmIntent.putExtra(IMAGE_PATH_ARRAY, getImagesNameArray(ImageUtils.getImagesList(this)));
         alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this,

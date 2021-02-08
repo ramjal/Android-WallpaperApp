@@ -186,19 +186,6 @@ public class PictureEditActivity extends AppCompatActivity {
         int bottom = top + Math.round(displayHeight / scale);
 
         Rect visibleRect = new Rect(left, top, right, bottom);
-        //visibleRect = null;
-
-//        String message = String.format("displayWidth = %d, displayHeight = %d" +
-//                                        "\nimageWidth = %d, imageHeight = %d" +
-//                                        "\nleft = %d, top = %d, " +
-//                                        "\nright = %d, bottom = %d" +
-//                                        "\nscale = %f, currentScale = %f",
-//                                        mDisplayWidth, mDisplayHeight,
-//                                        imageWidth, imageHeight,
-//                                        left, top, right, bottom,
-//                                        scale, currentScale);
-//        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-
         ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
 
         SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();

@@ -1,38 +1,25 @@
 package com.example.wallpaperapp;
 
-import android.app.AlertDialog;
-import android.app.WallpaperManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
-import org.w3c.dom.Text;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.content.Context.MODE_PRIVATE;
 
 public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdapter.PictureViewHolder> {
@@ -59,46 +46,19 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
     @Override
     public void onBindViewHolder(@NonNull PictureViewHolder holder, int position) {
-//        Bitmap imgBitmap = BitmapFactory.decodeFile(imagesList.get(position).getFile().getAbsolutePath());
-//        holder.imageViewItem.setImageBitmap(imgBitmap);
-
         ImageModel image = imagesList.get(position);
 
         Glide.with(mainContext)
                 .load(image.getFile().getAbsolutePath())
                 .into(holder.imageViewItem);
-        //        .centerCrop()
 
         holder.imageViewItem.setImageMatrix(createImageMartix(holder.imageViewItem, image));
-
-//        holder.imageViewItem.setOnClickListener(new View.OnClickListener() {
-//            @RequiresApi(api = Build.VERSION_CODES.N)
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(mainContext, PictureEditActivity.class);
-//                intent.putExtra("FILE_PATH", imagesList.get(position).getFile().getAbsolutePath());
-//                mainContext.startActivity(intent);
-//
-//                //setWallPaper(imgBitmap); //should fix this - should use an interface and do this inside the activity - look at RecyclerViewExample project
-//                //Toast.makeText(mainContext, imagesList.get(position).getName() + " Selected", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
-//        holder.imageViewItem.setOnLongClickListener(new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View v) {
-//                handleDelete(position);
-//                return true;
-//            }
-//        });
-
     }
 
     private Matrix createImageMartix(ImageView imageView, ImageModel image) {
         Matrix matrix = null;
 
         String imagePath = image.getFile().getAbsolutePath();
-        //image.rectStr = sharedPreferences.getString(image.getName(), null);
         if (image.rectStr != null) {
             BitmapFactory.Options options = ImageUtils.getImageOptions(imagePath);
             int imageViewWidth = imageView.getLayoutParams().width;
@@ -150,37 +110,6 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
         matrix.postTranslate(-dx, -dy);
         return matrix;
-    }
-
-    private void handleDelete(int position) {
-        //Toast.makeText(mainContext, imagesList.get(position).getName() + " Long Pressed!", Toast.LENGTH_SHORT).show();
-        AlertDialog.Builder myAlterDialog = new AlertDialog.Builder(mainContext);
-        myAlterDialog.setTitle("Alert");
-        myAlterDialog.setMessage("Click OK to continue, or Cancel to stop deleting this image.");
-
-        // Add the dialog buttons.
-        myAlterDialog.setPositiveButton("OK", new
-                DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        File file = imagesList.get(position).getFile();
-                        try {
-                            file.delete();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(mainContext, "!!!Error - Cannot Delete " + imagesList.get(position).getFile().getPath(), Toast.LENGTH_LONG).show();
-                        }
-                        Toast.makeText(mainContext, imagesList.get(position).getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
-                    }
-                });
-        myAlterDialog.setNegativeButton("Cancel", new
-                DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(mainContext, imagesList.get(position).getName() + " - Pressed Cancel", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        // Create and show the AlertDialog.
-        myAlterDialog.show();
     }
 
     @Override

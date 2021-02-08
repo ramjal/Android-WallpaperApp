@@ -23,12 +23,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import static android.app.WallpaperManager.FLAG_LOCK;
+import static android.content.Context.MODE_PRIVATE;
 
 public class ImageUtils {
     private static final String LOG_TAG = ImageUtils.class.getSimpleName();
 
     public static ArrayList<ImageModel> getImagesList(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
         ArrayList<ImageModel> imageList = new ArrayList<>();
         File dir = getAppSpecificPictureStorageDir(context);
         if (dir != null && dir.exists()) {
@@ -66,16 +67,19 @@ public class ImageUtils {
         return dir;
     }
 
-    public static void setWallPaper(Bitmap imageBitmap, Context context,  Rect visibleRect) {
+    public static boolean setWallPaper(Bitmap imageBitmap, Context context,  Rect visibleRect) {
+        boolean bRet = false;
         try {
             WallpaperManager myWallpaperManager = WallpaperManager.getInstance(context);
-            if (myWallpaperManager.setBitmap(imageBitmap, visibleRect, false, FLAG_LOCK) > 0) {
-                //Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+            bRet = (myWallpaperManager.setBitmap(imageBitmap, visibleRect, false, FLAG_LOCK) > 0);
+            if (bRet) {
+                Toast.makeText(context, "Wallpaper set!", Toast.LENGTH_SHORT).show();
             }
         } catch (IOException e) {
-            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
+        return bRet;
     }
 
     /**
