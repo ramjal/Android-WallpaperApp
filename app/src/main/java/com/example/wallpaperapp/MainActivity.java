@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
                                              //simple_selectable_list_item
 
         spnInerval.setAdapter(intervalAdapter);
+        spnInerval.setSelection(4);
     }
 
     private void startAlarm() {
