@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String INTERVAL_HOURS_KEY = "interval_hours";
     public static final String IMAGE_PATH_ARRAY = "images_path_array";
     public static final String IMAGE_INDEX = "images_index";
-    public static final String IMAGES_RECT_SET = "images_rect_set";
 
     private SharedPreferences sharedPreferences;
     static public final String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
@@ -41,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private AlarmManager alarmManager;
     private Intent alarmIntent;
     private PendingIntent alarmPendingIntent;
-    //private HashMap<String, Integer> intervalMap;
     private int selectedIntervalHour;
     private int pictureIndex;
     private List<String> intervalsText;
@@ -54,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         appContext = this.getApplication();
-        selectedIntervalHour = 1;
         pictureIndex = 0;
 
         //Set internal variables for Views
@@ -74,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         //Here we pass appContext instead of this just to have less memory leak application context is smaller than the activity context
         alarmIntent = new Intent(appContext, AlarmReceiver.class);
         setSpinnerData();
-        checkToggleButton();
+        initializeData();
     }
 
     @Override
@@ -99,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         return array;
     }
 
-    private void checkToggleButton() {
+    private void initializeData() {
         if (alarmIntent == null) return;
 
         alarmPendingIntent = PendingIntent.getBroadcast(appContext,
@@ -117,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             isAlarmAlreadySet = false;
             spnInerval.setEnabled(true);
+            spnInerval.setSelection(4);
         }
         btnStartStop.setChecked(isAlarmAlreadySet);
     }
@@ -135,14 +133,13 @@ public class MainActivity extends AppCompatActivity {
                                              //simple_selectable_list_item
 
         spnInerval.setAdapter(intervalAdapter);
-        spnInerval.setSelection(4);
     }
 
     private void startAlarm() {
         if (isAlarmAlreadySet) return;
-        long repeatInterval = 30000;
+        //long repeatInterval = 30000;
         //long repeatInterval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
-        //long repeatInterval = selectedIntervalHour * 3600 * 1000;
+        long repeatInterval = selectedIntervalHour * 3600 * 1000;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
         alarmIntent.putExtra(IMAGE_PATH_ARRAY, getImagesNameArray(ImageUtils.getImagesList(appContext)));
         alarmPendingIntent = PendingIntent.getBroadcast(appContext,
