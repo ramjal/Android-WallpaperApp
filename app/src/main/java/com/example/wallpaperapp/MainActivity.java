@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,23 +24,22 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private static final int PRIVATE_REQUEST_ID = 11;
-    private static final String INTERVAL_HOURS_KEY = "interval_hours";
+    private static final String TAG = MainActivity.class.getSimpleName();
+    public static final int PRIVATE_REQUEST_ID = 11;
+    public static final String INTERVAL_HOURS_KEY = "interval_hours";
     public static final String IMAGE_PATH_ARRAY = "images_path_array";
     public static final String IMAGE_INDEX = "images_index";
+    public static final String LAST_ALARM = "last_alarm";
+    public static final String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
 
     private SharedPreferences sharedPreferences;
-    static public final String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
 
     private Context appContext;
     private Spinner spnInerval;
     private TextView txtIndex;
+    private TextView txtTime;
     private TextView textLabel;
     private SwitchCompat btnStartStop;
-    private AlarmManager alarmManager;
-    private Intent alarmIntent;
-    private PendingIntent alarmPendingIntent;
     private int selectedIntervalHour;
     private int pictureIndex;
     private List<String> intervalsText;
@@ -50,12 +50,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Context context;
         appContext = this.getApplication();
         pictureIndex = 0;
 
         //Set internal variables for Views
         txtIndex = findViewById(R.id.txtIndex);
+        txtTime = findViewById(R.id.txtTime);
         textLabel = findViewById(R.id.textLabel);
         spnInerval = findViewById(R.id.spnInerval);
         btnStartStop = findViewById(R.id.btnStartStop);
@@ -67,9 +68,6 @@ public class MainActivity extends AppCompatActivity {
         //Get the shared preferences for reading app saved data
         sharedPreferences = getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
 
-        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        //Here we pass appContext instead of this just to have less memory leak application context is smaller than the activity context
-        alarmIntent = new Intent(appContext, AlarmReceiver.class);
         setSpinnerData();
         initializeData();
     }
@@ -88,77 +86,38 @@ public class MainActivity extends AppCompatActivity {
         preferencesEditor.apply();
     }
 
-    private String[] getImagesNameArray(ArrayList<ImageModel> imageList) {
-        String array[] = new String[imageList.size()];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = imageList.get(i).getFile().getAbsolutePath();
-        }
-        return array;
-    }
-
     private void initializeData() {
-        if (alarmIntent == null) return;
-
-        alarmPendingIntent = PendingIntent.getBroadcast(appContext,
-                PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_NO_CREATE);
-
-        if (alarmPendingIntent != null) {
+        //Here we pass appContext instead of this just to have less memory leak application context is smaller than the activity context
+        selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS_KEY, 1);
+        Integer position = intervalsNumber.indexOf(selectedIntervalHour);
+        spnInerval.setSelection(position);
+        if (AlarmUtils.alarmIsSet(appContext)) {
             isAlarmAlreadySet = true;
-            selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS_KEY, 1);
+            txtTime.setText(sharedPreferences.getString(LAST_ALARM, "Unknown"));
             pictureIndex = sharedPreferences.getInt(IMAGE_INDEX, 0);
             txtIndex.setText(String.valueOf(pictureIndex));
-
-            Integer position = intervalsNumber.indexOf(selectedIntervalHour);
-            spnInerval.setSelection(position);
             spnInerval.setEnabled(false);
         } else {
             isAlarmAlreadySet = false;
             spnInerval.setEnabled(true);
-            spnInerval.setSelection(4);
         }
         btnStartStop.setChecked(isAlarmAlreadySet);
     }
 
     private void setSpinnerData() {
         intervalsText = Arrays.asList("1 hour", "2 hours", "6 hours", "12 hours", "day", "week");
-        intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24*7);
+        intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24 * 7);
 
         ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
-                                    appContext, R.layout.spinner_item, intervalsText);
+                appContext, R.layout.spinner_item, intervalsText);
 //
 //        ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
 //                appContext, android.R.layout.simple_spinner_dropdown_item, intervalsText);
-                                             //simple_spinner_item
-                                             //simple_dropdown_item_1line
-                                             //simple_selectable_list_item
+        //simple_spinner_item
+        //simple_dropdown_item_1line
+        //simple_selectable_list_item
 
         spnInerval.setAdapter(intervalAdapter);
-    }
-
-    private void startAlarm() {
-        if (isAlarmAlreadySet) return;
-        //long repeatInterval = 30000;
-        //long repeatInterval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
-        long repeatInterval = selectedIntervalHour * 3600 * 1000;
-        long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
-        alarmIntent.putExtra(IMAGE_PATH_ARRAY, getImagesNameArray(ImageUtils.getImagesList(appContext)));
-        alarmPendingIntent = PendingIntent.getBroadcast(appContext,
-                PRIVATE_REQUEST_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        if (alarmManager != null && alarmPendingIntent != null) {
-            alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    triggerTime, repeatInterval, alarmPendingIntent);
-            Toast.makeText(appContext, "Alarm is On", Toast.LENGTH_SHORT).show();
-            spnInerval.setEnabled(false);
-        }
-    }
-
-    private void stopAlarm() {
-        if (alarmManager != null && alarmPendingIntent != null) {
-            alarmManager.cancel(alarmPendingIntent);
-            alarmPendingIntent.cancel();
-            Toast.makeText(appContext, "Alarm is Off!", Toast.LENGTH_SHORT).show();
-            spnInerval.setEnabled(true);
-        }
     }
 
     //region Event Handlers
@@ -167,10 +126,12 @@ public class MainActivity extends AppCompatActivity {
     class btnStartStopChanged implements CompoundButton.OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if (isChecked) {
-                startAlarm();
+            if (isChecked && !isAlarmAlreadySet) {
+                AlarmUtils.startAlarm(appContext);
+                spnInerval.setEnabled(false);
             } else {
-                stopAlarm();
+                AlarmUtils.stopAlarm(appContext);
+                spnInerval.setEnabled(true);
             }
         }
     }
@@ -180,10 +141,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             selectedIntervalHour = intervalsNumber.get(position);
+            SaveSharedData();
         }
 
         @Override
-        public void onNothingSelected(AdapterView<?> parent) {}
+        public void onNothingSelected(AdapterView<?> parent) {
+        }
     }
 
     public void btnImagesClicked(View view) {

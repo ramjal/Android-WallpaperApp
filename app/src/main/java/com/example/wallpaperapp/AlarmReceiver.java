@@ -56,7 +56,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 pictureIndex = 0;
             }
             if (ImageUtils.setWallPaper(imagesPathList[pictureIndex], context)) {
-                LogSuccessMessage();
+                //LogSuccessMessage();
                 SaveNewPictureIndex();
             }
         } catch (Exception e) {
@@ -75,6 +75,8 @@ public class AlarmReceiver extends BroadcastReceiver {
         pictureIndex++;
         SharedPreferences.Editor preferencesEditor = mPreferences.edit();
         preferencesEditor.putInt(MainActivity.IMAGE_INDEX, pictureIndex);
+        String time = new SimpleDateFormat("HH:mm").format(new Date());
+        preferencesEditor.putString(MainActivity.LAST_ALARM, time);
         preferencesEditor.apply();
     }
 

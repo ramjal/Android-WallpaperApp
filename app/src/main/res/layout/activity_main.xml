@@ -60,6 +60,14 @@
         app:layout_constraintEnd_toStartOf="@+id/btnStartStop"
         app:layout_constraintTop_toTopOf="@+id/spnInerval" />
 
+    <TextView
+        android:id="@+id/txtTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="@+id/txtIndex"
+        app:layout_constraintTop_toBottomOf="@+id/txtIndex" />
+
     <Button
         android:id="@+id/btnImages"
         android:layout_width="wrap_content"

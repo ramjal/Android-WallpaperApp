@@ -46,6 +46,14 @@ public class ImageUtils {
         return imageList;
     }
 
+    static public String[] getImagesNameArray(ArrayList<ImageModel> imageList) {
+        String array[] = new String[imageList.size()];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = imageList.get(i).getFile().getAbsolutePath();
+        }
+        return array;
+    }
+
     @Nullable
     public static File getAppSpecificPictureStorageDir(Context context) {
         //Get the pictures directory that's inside the app-specific directory on external storage
