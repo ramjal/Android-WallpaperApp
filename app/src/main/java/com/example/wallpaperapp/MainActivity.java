@@ -1,12 +1,9 @@
 package com.example.wallpaperapp;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -19,14 +16,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final int PRIVATE_REQUEST_ID = 11;
-    public static final String INTERVAL_HOURS_KEY = "interval_hours";
+    public static final String INTERVAL_HOURS = "interval_hours";
+    public static final String ALARM_ON_OFF = "alarm_on_off";
     public static final String IMAGE_PATH_ARRAY = "images_path_array";
     public static final String IMAGE_INDEX = "images_index";
     public static final String LAST_ALARM = "last_alarm";
@@ -75,20 +72,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-
         SaveSharedData();
     }
 
     //Create shared object and save the needed data
     private void SaveSharedData() {
         SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
-        preferencesEditor.putInt(INTERVAL_HOURS_KEY, selectedIntervalHour);
+        preferencesEditor.putInt(INTERVAL_HOURS, selectedIntervalHour);
+        boolean isOn = btnStartStop.isChecked();
+        preferencesEditor.putBoolean(ALARM_ON_OFF, isOn);
         preferencesEditor.apply();
+        Log.d(TAG, "sharedPreferences.ALARM_ON_OFF is: " + isOn);
     }
 
     private void initializeData() {
         //Here we pass appContext instead of this just to have less memory leak application context is smaller than the activity context
-        selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS_KEY, 1);
+        selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS, 1);
+        boolean isOn = sharedPreferences.getBoolean(ALARM_ON_OFF, false);
+        Log.d(TAG, "sharedPreferences.ALARM_ON_OFF is: " + isOn);
         Integer position = intervalsNumber.indexOf(selectedIntervalHour);
         spnInerval.setSelection(position);
         if (AlarmUtils.alarmIsSet(appContext)) {
@@ -126,8 +127,8 @@ public class MainActivity extends AppCompatActivity {
     class btnStartStopChanged implements CompoundButton.OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if (isChecked && !isAlarmAlreadySet) {
-                AlarmUtils.startAlarm(appContext);
+            if (isChecked) {
+                if (!isAlarmAlreadySet) AlarmUtils.startAlarm(appContext);
                 spnInerval.setEnabled(false);
             } else {
                 AlarmUtils.stopAlarm(appContext);
@@ -141,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             selectedIntervalHour = intervalsNumber.get(position);
-            SaveSharedData();
         }
 
         @Override

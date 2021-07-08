@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 import static android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP;
 import static android.content.Context.MODE_PRIVATE;
-import static com.example.wallpaperapp.MainActivity.INTERVAL_HOURS_KEY;
+import static com.example.wallpaperapp.MainActivity.INTERVAL_HOURS;
 import static com.example.wallpaperapp.MainActivity.PRIVATE_REQUEST_ID;
 import static com.example.wallpaperapp.MainActivity.SHARED_PREF_FILE_NAME;
 
@@ -27,7 +27,7 @@ public class AlarmUtils {
 
     public static void startAlarm(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
-        int selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS_KEY, 1);
+        int selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS, 1);
         long repeatInterval = selectedIntervalHour * 3600 * 1000;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
@@ -39,8 +39,8 @@ public class AlarmUtils {
         if (alarmManager != null && alarmPendingIntent != null) {
             alarmManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, triggerTime, repeatInterval,
                     alarmPendingIntent);
-            Toast.makeText(context, "Alarm is On", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Started the alarm");
+            Toast.makeText(context, "Wallpaper is On", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Started the Wallpaper alarm");
         }
     }
 
@@ -52,8 +52,8 @@ public class AlarmUtils {
         if (alarmManager != null && alarmPendingIntent != null) {
             alarmManager.cancel(alarmPendingIntent);
             alarmPendingIntent.cancel();
-            Toast.makeText(context, "Alarm is Off!", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Stopped the alarm");
+            Toast.makeText(context, "Wallpaper is Off!", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Stopped the Wallpaper alarm");
         }
     }
 
