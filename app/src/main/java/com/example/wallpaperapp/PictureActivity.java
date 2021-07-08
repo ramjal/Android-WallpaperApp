@@ -122,7 +122,15 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
             case ADD_IMAGE_REQUEST:
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
-                        addImageFileToAppStorage(data.getData());
+                        if(null != data.getClipData()) { // checking multiple selection or not
+                            for(int i = 0; i < data.getClipData().getItemCount(); i++) {
+                                Uri uri = data.getClipData().getItemAt(i).getUri();
+                                addImageFileToAppStorage(uri);
+                            }
+                        } else {
+                            Uri uri = data.getData();
+                            addImageFileToAppStorage(uri);
+                        }
                     }
                 } else if (resultCode == Activity.RESULT_CANCELED) {
                     Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show();
