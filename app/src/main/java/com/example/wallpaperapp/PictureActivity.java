@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.ArraySet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,7 +25,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
+
+import static android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
 public class PictureActivity extends AppCompatActivity implements ImagesRecViewAdapter.OnPictureClickListener {
 
@@ -89,15 +89,13 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
     }
 
     public void btnAddImageClicked(View view) {
-        Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
-        getIntent.setType("image/*");
-        Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
-        //To add images to the first list
-        Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        pickIntent.setType("image/*");
-        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
-        //
-        startActivityForResult(chooserIntent, ADD_IMAGE_REQUEST);
+        Intent intent = new Intent();
+        intent.setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        //intent.putExtra(Intent.EXTRA_LOCAL_ONLY,true); //Don't show external storage
+        intent.setAction(Intent.ACTION_PICK);
+        //intent.setAction(Intent.ACTION_GET_CONTENT); //Use this to show Google Drive, Downloads and others
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), ADD_IMAGE_REQUEST);
     }
 
     //implemented ImagesRecViewAdapter.OnPictureClickListener
