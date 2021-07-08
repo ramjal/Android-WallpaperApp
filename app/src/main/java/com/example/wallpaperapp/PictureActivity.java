@@ -8,7 +8,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.ArraySet;
@@ -142,11 +144,11 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
 
     private void addImageFileToAppStorage(Uri uri) {
         try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+            Bitmap bitmap = getCapturedImage(uri);
 
             File dir = ImageUtils.getAppSpecificPictureStorageDir(this);
-            if (dir == null || !dir.exists()) {
-                Toast.makeText(this, "Cannot find directory: " + dir.getName(), Toast.LENGTH_LONG).show();
+            if (bitmap == null || dir == null || !dir.exists()) {
+                Toast.makeText(this, "Cannot find the bitmap of the directory: " + dir.getName(), Toast.LENGTH_LONG).show();
                 return;
             }
             //Create new instance of a file
@@ -163,6 +165,25 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
             Log.d(LOG_TAG, "Exception in Select Image!");
             e.printStackTrace();
         }
+    }
+
+    private Bitmap getCapturedImage(Uri imageUri)  {
+        Bitmap bitmap = null;
+        if (Build.VERSION.SDK_INT >= 29) {
+            ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), imageUri);
+            try {
+                bitmap = ImageDecoder.decodeBitmap(source);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return bitmap;
     }
 
 
