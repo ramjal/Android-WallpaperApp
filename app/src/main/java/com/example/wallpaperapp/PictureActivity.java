@@ -147,8 +147,8 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
             Bitmap bitmap = getCapturedImage(uri);
 
             File dir = ImageUtils.getAppSpecificPictureStorageDir(this);
-            if (bitmap == null || dir == null || !dir.exists()) {
-                Toast.makeText(this, "Cannot find the bitmap of the directory: " + dir.getName(), Toast.LENGTH_LONG).show();
+            if (dir == null || !dir.exists()) {
+                Toast.makeText(this, "Cannot find directory: " + dir.getName(), Toast.LENGTH_LONG).show();
                 return;
             }
             //Create new instance of a file
