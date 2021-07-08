@@ -128,11 +128,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
-                if (!isAlarmAlreadySet) AlarmUtils.startAlarm(appContext);
                 spnInerval.setEnabled(false);
+                if (!isAlarmAlreadySet) {
+                    int selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS, 1);
+                    AlarmUtils.startAlarm(appContext, selectedIntervalHour);
+                }
             } else {
-                AlarmUtils.stopAlarm(appContext);
                 spnInerval.setEnabled(true);
+                AlarmUtils.stopAlarm(appContext);
             }
         }
     }
