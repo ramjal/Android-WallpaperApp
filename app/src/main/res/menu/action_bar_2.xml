@@ -3,21 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_delete_2"
+        android:id="@+id/action_delete_image"
         android:orderInCategory="100"
         android:title="Delete"
         android:icon="@drawable/ic_action_delete"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_info_2"
+        android:id="@+id/action_image_info"
         android:orderInCategory="200"
         android:title="Info"
         android:icon="@drawable/ic_action_info"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_set_2"
+        android:id="@+id/action_set_image"
         android:orderInCategory="300"
         android:title="Set"
         android:icon="@drawable/ic_check_circle"

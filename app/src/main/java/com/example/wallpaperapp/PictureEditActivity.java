@@ -149,13 +149,13 @@ public class PictureEditActivity extends AppCompatActivity {
         scale = (rectF.right - rectF.left) / options.outWidth;
 
         int id = item.getItemId();
-        if (id == R.id.action_set_2) {
+        if (id == R.id.action_set_image) {
             setWallPaper();
             return true;
-        } else if (id == R.id.action_info_2) {
+        } else if (id == R.id.action_image_info) {
             displayImageInfo(options);
             return true;
-        } else if (id == R.id.action_delete_2) {
+        } else if (id == R.id.action_delete_image) {
             handleDelete();
 
             // Do nothing
@@ -186,13 +186,13 @@ public class PictureEditActivity extends AppCompatActivity {
         int bottom = top + Math.round(displayHeight / scale);
 
         Rect visibleRect = new Rect(left, top, right, bottom);
-        ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
+        //ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
 
         SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
         String rectStr = String.format(Locale.CANADA, "%d,%d,%d,%d", visibleRect.left, visibleRect.top, visibleRect.right, visibleRect.bottom);
         preferencesEditor.putString(imageModel.getName(), rectStr);
         preferencesEditor.apply();
-        Toast.makeText(this, "Wallpaper is set!", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Image rect is set!", Toast.LENGTH_LONG).show();
     }
 
 
