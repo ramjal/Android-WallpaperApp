@@ -11,8 +11,6 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 
@@ -35,11 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private Spinner spnInerval;
     private TextView txtIndex;
     private TextView txtTime;
-    private TextView textLabel;
     private SwitchCompat btnStartStop;
     private int selectedIntervalHour;
     private int pictureIndex;
-    private List<String> intervalsText;
     private List<Integer> intervalsNumber;
     private boolean isAlarmAlreadySet;
 
@@ -47,14 +43,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Context context;
         appContext = this.getApplication();
         pictureIndex = 0;
 
         //Set internal variables for Views
         txtIndex = findViewById(R.id.txtIndex);
         txtTime = findViewById(R.id.txtTime);
-        textLabel = findViewById(R.id.textLabel);
         spnInerval = findViewById(R.id.spnInerval);
         btnStartStop = findViewById(R.id.btnStartStop);
 
@@ -90,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS, 1);
         boolean isOn = sharedPreferences.getBoolean(ALARM_ON_OFF, false);
         Log.d(TAG, "sharedPreferences.ALARM_ON_OFF is: " + isOn);
-        Integer position = intervalsNumber.indexOf(selectedIntervalHour);
+        int position = intervalsNumber.indexOf(selectedIntervalHour);
         spnInerval.setSelection(position);
         if (AlarmUtils.alarmIsSet(appContext)) {
             isAlarmAlreadySet = true;
@@ -106,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setSpinnerData() {
-        intervalsText = Arrays.asList("1 hour", "2 hours", "6 hours", "12 hours", "day", "week");
+        List<String> intervalsText = Arrays.asList("1 hour", "2 hours", "6 hours", "12 hours", "day", "week");
         intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24 * 7);
 
         ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
