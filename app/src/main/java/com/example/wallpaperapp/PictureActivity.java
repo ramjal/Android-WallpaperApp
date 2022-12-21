@@ -3,7 +3,6 @@ package com.example.wallpaperapp;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -18,15 +17,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-
 import org.parceler.Parcels;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
-import static android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
 public class PictureActivity extends AppCompatActivity implements ImagesRecViewAdapter.OnPictureClickListener {
 
@@ -36,8 +31,6 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
     public static final String IMAGE_MODEL = "wallpaperapp.IMAGE_MODEL";
     public static final String DELETE_MESSAGE = "wallpaperapp.DELETE_MESSAGE";
 
-    private RecyclerView recviewImageList;
-    private OutputStream outputStream;
     private ImagesRecViewAdapter recviewAdapter;
     private int lastPosition;
 
@@ -47,7 +40,7 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         setContentView(R.layout.activity_picture);
 
         lastPosition = -1;
-        recviewImageList = findViewById(R.id.recviewImageList);
+        RecyclerView recviewImageList = findViewById(R.id.recviewImageList);
         recviewAdapter = new ImagesRecViewAdapter(this, this);
         recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
         recviewImageList.setAdapter(recviewAdapter);
@@ -74,15 +67,12 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        switch (id) {
-            case R.id.action_delete:
-                //do something
-                return true;
-            case R.id.action_info:
-                //do something
-                return true;
-            default:
-                // Do nothing
+        if (id == R.id.action_delete) {
+            //do something
+            return true;
+        } else if (id == R.id.action_info) {
+            //do something
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -159,12 +149,13 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
 
             File dir = ImageUtils.getAppSpecificPictureStorageDir(this);
             if (dir == null || !dir.exists()) {
+                assert dir != null;
                 Toast.makeText(this, "Cannot find directory: " + dir.getName(), Toast.LENGTH_LONG).show();
                 return;
             }
             //Create new instance of a file
             File file = new File(dir, System.currentTimeMillis() + ".jpg");
-            outputStream = new FileOutputStream(file);
+            OutputStream outputStream = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
 
             outputStream.flush();
