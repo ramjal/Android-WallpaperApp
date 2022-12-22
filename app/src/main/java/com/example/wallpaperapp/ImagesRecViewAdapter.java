@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -47,7 +48,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     @Override
     public void onBindViewHolder(@NonNull PictureViewHolder holder, int position) {
         ImageModel image = imagesList.get(position);
-
+        holder.txtViewItem.setText(String.valueOf(position));
         Glide.with(mainContext)
                 .load(image.getFile().getAbsolutePath())
                 .into(holder.imageViewItem);
@@ -128,15 +129,16 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
     public class PictureViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         private final CardView cardView;
-        private final RelativeLayout parentOfImage;
         private final ImageView imageViewItem;
+        private final TextView txtViewItem;
         private final OnPictureClickListener onPictureClickListener;
 
         public PictureViewHolder(@NonNull View itemView, OnPictureClickListener onPictureClickListener) {
             super(itemView);
             cardView = itemView.findViewById(R.id.cardView);
-            parentOfImage = itemView.findViewById(R.id.parentOfImage);
             imageViewItem = itemView.findViewById(R.id.imgViewItem);
+            txtViewItem = itemView.findViewById(R.id.txtViewItem);
+
             this.onPictureClickListener = onPictureClickListener;
             //Make each image 1/3 of the screen width
             Point size = new Point();

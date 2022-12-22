@@ -20,6 +20,13 @@
             android:layout_height="140dp"
             android:scaleType="matrix"
             android:layout_centerHorizontal="true" />
+        <TextView
+            android:id="@+id/txtViewItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:textStyle="bold"
+            android:textColor="@color/yellow" />
 
     </RelativeLayout>
 

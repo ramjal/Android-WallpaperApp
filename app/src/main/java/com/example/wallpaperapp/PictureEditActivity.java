@@ -220,6 +220,7 @@ public class PictureEditActivity extends AppCompatActivity {
                         }
                     }
                 });
+
         myAlterDialog.setNegativeButton("No", new
                 DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {

@@ -1,6 +1,7 @@
 package com.example.wallpaperapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.app.Activity;
@@ -48,8 +49,8 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             recviewImageList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         } else {
-            recviewImageList.setLayoutManager(new LinearLayoutManager(this));
-            //recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
+            //recviewImageList.setLayoutManager(new LinearLayoutManager(this));
+            recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
         }
     }
 
