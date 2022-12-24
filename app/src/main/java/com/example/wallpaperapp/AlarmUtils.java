@@ -19,7 +19,7 @@ public class AlarmUtils {
     public static boolean alarmIsSet(Context context) {
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
         PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, PRIVATE_REQUEST_ID,
-                alarmIntent, PendingIntent.FLAG_NO_CREATE);
+                alarmIntent, PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
         return (alarmPendingIntent != null);
     }
 

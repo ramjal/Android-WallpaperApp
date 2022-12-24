@@ -3,5 +3,5 @@
     <string name="spinner_label">Repeat every</string>
     <string name="button_start_text">Click me to Start!</string>
     <string name="button_stop_text">Click me to Stop!</string>
-    <string name="button_addimage_text">Add New Image</string>
+    <string name="button_add_image_text">Add New Image</string>
 </resources>

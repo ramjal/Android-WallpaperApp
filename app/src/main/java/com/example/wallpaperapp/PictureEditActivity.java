@@ -2,6 +2,7 @@ package com.example.wallpaperapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -67,10 +68,10 @@ public class PictureEditActivity extends AppCompatActivity {
     }
 
     private void setupVariables() {
-        Point size = new Point();
-        getDisplay().getRealSize(size);
+        Point size = ImageUtils.GetDisplaySize(this);
         displayWidth = size.x;
         displayHeight = size.y;
+
         imgView2Edit = findViewById(R.id.imgView2Edit);
         imageModel = (ImageModel) Parcels.unwrap(getIntent().getParcelableExtra(PictureActivity.IMAGE_MODEL));
         filePath = imageModel.getFile().getAbsolutePath();
@@ -88,14 +89,14 @@ public class PictureEditActivity extends AppCompatActivity {
         mGestureDetector = new GestureDetector(this, new ScrollListener());
         imgView2Edit.setOnTouchListener(new ImageOnTouchListener());
 
-        matrix = createImageMartix(imgView2Edit, imageModel);
+        matrix = createImageMatix(imgView2Edit, imageModel);
         //matrix.setScale(currentScale, currentScale);
         //matrix.postTranslate(-currentX, -currentY);
         imgView2Edit.setImageMatrix(matrix);
     }
 
 
-    private Matrix createImageMartix(ImageView imageView, ImageModel image) {
+    private Matrix createImageMatix(ImageView imageView, ImageModel image) {
         Matrix matrix = null;
 
         String imagePath = image.getFile().getAbsolutePath();
@@ -157,11 +158,10 @@ public class PictureEditActivity extends AppCompatActivity {
             return true;
         } else if (id == R.id.action_delete_image) {
             handleDelete();
-
-            // Do nothing
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     private void displayImageInfo(BitmapFactory.Options options) {
         Rect rect = new Rect(0,0,0,0);
@@ -170,6 +170,7 @@ public class PictureEditActivity extends AppCompatActivity {
                 imageModel.getName(), rect.left, rect.top, rect.right, rect.bottom, options.outWidth, options.outHeight, scale);
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
+
 
     private void setWallPaper() {
         Bitmap imageBitmap = BitmapFactory.decodeFile(filePath);
@@ -203,30 +204,28 @@ public class PictureEditActivity extends AppCompatActivity {
         myAlterDialog.setMessage("Are you sure you want to delete this image?");
 
         // Add the dialog buttons.
-        myAlterDialog.setPositiveButton("Yes", new
-                DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            if (imageModel.file.delete()) {
-                                Intent replyIntent = new Intent();
-                                replyIntent.putExtra(PictureActivity.DELETE_MESSAGE, imageModel.getName() + " is now deleted!");
-                                setResult(RESULT_OK, replyIntent);
-                                finish();
-                                //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(PictureEditActivity.this, "!!!Error - " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        myAlterDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    try {
+                        if (imageModel.file.delete()) {
+                            Intent replyIntent = new Intent();
+                            replyIntent.putExtra(PictureActivity.DELETE_MESSAGE, imageModel.getName() + " is now deleted!");
+                            setResult(RESULT_OK, replyIntent);
+                            finish();
+                            //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(PictureEditActivity.this, "!!!Error - " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                });
+                }
+            });
 
-        myAlterDialog.setNegativeButton("No", new
-                DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " - Pressed Cancel", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        myAlterDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    Toast.makeText(PictureEditActivity.this, imageModel.getName() + " - Pressed Cancel", Toast.LENGTH_SHORT).show();
+                }
+            });
 
         // Create and show the AlertDialog.
         myAlterDialog.show();
@@ -243,13 +242,16 @@ public class PictureEditActivity extends AppCompatActivity {
         );
     }
 
+
     //remove the Title from actoin bar
     private void clearTitle() {
         Objects.requireNonNull(getSupportActionBar()).setTitle("");
     }
 
+
     //region Inner Classes
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             float newFactor = detector.getScaleFactor();
@@ -289,6 +291,7 @@ public class PictureEditActivity extends AppCompatActivity {
     }
 
     private class ScrollListener extends GestureDetector.SimpleOnGestureListener {
+
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             rectF = ImageUtils.getImageBounds(imgView2Edit);

@@ -1,14 +1,21 @@
 package com.example.wallpaperapp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.hardware.display.DisplayManager;
+import android.os.Build;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.WindowMetrics;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -25,16 +32,16 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdapter.PictureViewHolder> {
 
-    private SharedPreferences sharedPreferences;
+    //private final SharedPreferences sharedPreferences;
     private static ArrayList<ImageModel> imagesList;
-    private Context mainContext;
+    private final Context mainContext;
     private OnPictureClickListener onPictureClickListener;
 
     public ImagesRecViewAdapter(Context context, OnPictureClickListener onPictureClickListener) {
         mainContext = context;
         this.onPictureClickListener = onPictureClickListener;
         //Get the shared preferences for reading app saved data
-        sharedPreferences = mainContext.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
+        //sharedPreferences = mainContext.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
     }
 
     @NonNull
@@ -141,8 +148,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
 
             this.onPictureClickListener = onPictureClickListener;
             //Make each image 1/3 of the screen width
-            Point size = new Point();
-            mainContext.getDisplay().getRealSize(size);
+            Point size = ImageUtils.GetDisplaySize((Activity) mainContext);
             int displayWidth = size.x;
             int displayHeight = size.y;
             imageViewItem.getLayoutParams().width = displayWidth / 3;

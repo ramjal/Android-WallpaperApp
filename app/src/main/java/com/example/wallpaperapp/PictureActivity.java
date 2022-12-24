@@ -1,10 +1,15 @@
 package com.example.wallpaperapp;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -35,10 +40,14 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
     private ImagesRecViewAdapter recviewAdapter;
     private int lastPosition;
 
+    private Context appContext;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picture);
+
+        appContext = getApplicationContext();
 
         lastPosition = -1;
         RecyclerView recviewImageList = findViewById(R.id.recviewImageList);
@@ -86,8 +95,29 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         //intent.putExtra(Intent.EXTRA_LOCAL_ONLY,true); //Don't show external storage
         intent.setAction(Intent.ACTION_PICK);
         //intent.setAction(Intent.ACTION_GET_CONTENT); //Use this to show Google Drive, Downloads and others
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), ADD_IMAGE_REQUEST);
+        selectPictureResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
     }
+
+    ActivityResultLauncher<Intent> selectPictureResultLauncher = registerForActivityResult(
+        new ActivityResultContracts.StartActivityForResult(),
+        new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (result.getData() != null) {
+                        if(null != result.getData().getClipData()) { // checking multiple selection or not
+                            for(int i = 0; i < result.getData().getClipData().getItemCount(); i++) {
+                                Uri uri = result.getData().getClipData().getItemAt(i).getUri();
+                                addImageFileToAppStorage(uri);
+                            }
+                        } else {
+                            Uri uri = result.getData().getData();
+                            addImageFileToAppStorage(uri);
+                        }
+                    }
+                }
+            }
+        });
 
     //implemented ImagesRecViewAdapter.OnPictureClickListener
     @Override
@@ -96,52 +126,32 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
         ImageModel image = ImageUtils.getImagesList(this).get(position);
         lastPosition = position;
         intent.putExtra(IMAGE_MODEL, Parcels.wrap(image));
-        startActivityForResult(intent, EDIT_IMAGE_REQUEST);
+        pictureEditActivityResultLauncher.launch(intent);
     }
+
+    ActivityResultLauncher<Intent> pictureEditActivityResultLauncher = registerForActivityResult(
+        new ActivityResultContracts.StartActivityForResult(),
+        new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    String message = data.getStringExtra(DELETE_MESSAGE);
+                    if (message != null && lastPosition >= 0) {
+                        recviewAdapter.getImagesList().remove(lastPosition);
+                        recviewAdapter.notifyItemRemoved(lastPosition);
+                        Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show();
+                        lastPosition = -1;
+                    }
+                }
+            }
+        });
 
     //implemented ImagesRecViewAdapter.OnPictureClickListener
     @Override
     public boolean onPictureLongClick(int position) {
         Toast.makeText(this, "Long clicked!", Toast.LENGTH_SHORT).show();
         return true;
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case ADD_IMAGE_REQUEST:
-                if (resultCode == Activity.RESULT_OK) {
-                    if (data != null) {
-                        if(null != data.getClipData()) { // checking multiple selection or not
-                            for(int i = 0; i < data.getClipData().getItemCount(); i++) {
-                                Uri uri = data.getClipData().getItemAt(i).getUri();
-                                addImageFileToAppStorage(uri);
-                            }
-                        } else {
-                            Uri uri = data.getData();
-                            addImageFileToAppStorage(uri);
-                        }
-                    }
-                } else if (resultCode == Activity.RESULT_CANCELED) {
-                    Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            case EDIT_IMAGE_REQUEST:
-                //Toast.makeText(this, String.format("Form Edit - %d", resultCode) , Toast.LENGTH_SHORT).show();
-                if (resultCode == RESULT_OK) {
-                    String message = data.getStringExtra(DELETE_MESSAGE);
-                    if (message != null && lastPosition >= 0) {
-                        recviewAdapter.getImagesList().remove(lastPosition);
-                        recviewAdapter.notifyItemRemoved(lastPosition);
-                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-                        lastPosition = -1;
-                    }
-                }
-                break;
-            default:
-                // Do nothing
-        }
     }
 
     private void addImageFileToAppStorage(Uri uri) {
@@ -158,7 +168,6 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
             File file = new File(dir, System.currentTimeMillis() + ".jpg");
             OutputStream outputStream = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-
             outputStream.flush();
             outputStream.close();
             recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
@@ -172,22 +181,21 @@ public class PictureActivity extends AppCompatActivity implements ImagesRecViewA
 
     private Bitmap getCapturedImage(Uri imageUri)  {
         Bitmap bitmap = null;
-        if (Build.VERSION.SDK_INT >= 29) {
-            ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), imageUri);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             try {
-                bitmap = ImageDecoder.decodeBitmap(source);
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), imageUri);
+                bitmap = ImageDecoder.decodeBitmap(source);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return bitmap;
     }
-
 
 }

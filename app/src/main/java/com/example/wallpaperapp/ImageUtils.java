@@ -1,10 +1,12 @@
 package com.example.wallpaperapp;
 
+import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -126,6 +128,25 @@ public class ImageUtils {
         BitmapFactory.decodeFile(filePath, options);
 
         return options;
+    }
+
+    public static Point GetDisplaySize(Activity activity) {
+        Point size = new Point();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Rect rect = activity.getWindowManager().getMaximumWindowMetrics().getBounds();
+            size.x = rect.width();
+            size.y = rect.height();
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R) {
+            activity.getDisplay().getRealSize(size);
+        } else {
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            size.x = displayMetrics.widthPixels;
+            size.y = displayMetrics.heightPixels;
+        }
+
+        return size;
     }
 
 }

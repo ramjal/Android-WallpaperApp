@@ -61,7 +61,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:onClick="btnAddImageClicked"
-        android:text="@string/button_addimage_text"
+        android:text="@string/button_add_image_text"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btnStartStop"
