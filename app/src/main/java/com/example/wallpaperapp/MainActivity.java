@@ -1,9 +1,16 @@
 package com.example.wallpaperapp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,13 +20,28 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import org.parceler.Parcels;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ImagesRecViewAdapter.OnPictureClickListener {
+
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final int PRIVATE_REQUEST_ID = 11;
     public static final String INTERVAL_HOURS = "interval_hours";
@@ -28,9 +50,10 @@ public class MainActivity extends AppCompatActivity {
     public static final String IMAGE_INDEX = "images_index";
     public static final String LAST_ALARM = "last_alarm";
     public static final String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
+    public static final String IMAGE_MODEL = "wallpaperapp.IMAGE_MODEL";
+    public static final String DELETE_MESSAGE = "wallpaperapp.DELETE_MESSAGE";
 
     private SharedPreferences sharedPreferences;
-
     private Context appContext;
     private Spinner spnInerval;
     private TextView txtIndex;
@@ -40,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private int pictureIndex;
     private List<Integer> intervalsNumber;
     private boolean isAlarmAlreadySet;
+    private ImagesRecViewAdapter recviewAdapter;
+    private int lastPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +85,19 @@ public class MainActivity extends AppCompatActivity {
 
         //Get the shared preferences for reading app saved data
         sharedPreferences = getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
+
+        lastPosition = -1;
+        RecyclerView recviewImageList = findViewById(R.id.recyclerViewImageList);
+        recviewAdapter = new ImagesRecViewAdapter(this, this);
+        recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
+        recviewImageList.setAdapter(recviewAdapter);
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            recviewImageList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        } else {
+            //recviewImageList.setLayoutManager(new LinearLayoutManager(this));
+            recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
+        }
 
         setSpinnerData();
         initializeData();
@@ -117,8 +155,6 @@ public class MainActivity extends AppCompatActivity {
         spnInerval.setAdapter(intervalAdapter);
     }
 
-    //region Event Handlers
-
     //btnStartStopChanged event handler
     class btnStartStopChanged implements CompoundButton.OnCheckedChangeListener {
         @Override
@@ -157,6 +193,112 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Start Time Clicked! " , Toast.LENGTH_LONG).show();
     }
 
-    //endregion
+    public void btnAddImageClicked(View view) {
+        Intent intent = new Intent();
+        intent.setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        //intent.putExtra(Intent.EXTRA_LOCAL_ONLY,true); //Don't show external storage
+        intent.setAction(Intent.ACTION_PICK);
+        //intent.setAction(Intent.ACTION_GET_CONTENT); //Use this to show Google Drive, Downloads and others
+        selectPictureResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+    }
 
+    ActivityResultLauncher<Intent> selectPictureResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        if (result.getData() != null) {
+                            if(null != result.getData().getClipData()) { // checking multiple selection or not
+                                for(int i = 0; i < result.getData().getClipData().getItemCount(); i++) {
+                                    Uri uri = result.getData().getClipData().getItemAt(i).getUri();
+                                    addImageFileToAppStorage(uri);
+                                }
+                            } else {
+                                Uri uri = result.getData().getData();
+                                addImageFileToAppStorage(uri);
+                            }
+                        }
+                    }
+                }
+            });
+
+    //implemented ImagesRecViewAdapter.OnPictureClickListener
+    @Override
+    public void onPictureClick(int position) {
+        Intent intent = new Intent(this, PictureEditActivity.class);
+        ImageModel image = ImageUtils.getImagesList(this).get(position);
+        lastPosition = position;
+        intent.putExtra(IMAGE_MODEL, Parcels.wrap(image));
+        pictureEditActivityResultLauncher.launch(intent);
+    }
+
+    @Override
+    public boolean onPictureLongClick(int position) {
+        Toast.makeText(appContext, "Long Click Not Implemented", Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    ActivityResultLauncher<Intent> pictureEditActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        String message = data.getStringExtra(DELETE_MESSAGE);
+                        if (message != null && lastPosition >= 0) {
+                            recviewAdapter.getImagesList().remove(lastPosition);
+                            recviewAdapter.notifyItemRemoved(lastPosition);
+                            Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show();
+                            lastPosition = -1;
+                        }
+                    }
+                }
+            });
+
+    private void addImageFileToAppStorage(Uri uri) {
+        try {
+            Bitmap bitmap = getCapturedImage(uri);
+
+            File dir = ImageUtils.getAppSpecificPictureStorageDir(this);
+            if (dir == null || !dir.exists()) {
+                assert dir != null;
+                Toast.makeText(this, "Cannot find directory: " + dir.getName(), Toast.LENGTH_LONG).show();
+                return;
+            }
+            //Create new instance of a file
+            File file = new File(dir, System.currentTimeMillis() + ".jpg");
+            OutputStream outputStream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            outputStream.flush();
+            outputStream.close();
+            recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
+            Toast.makeText(this, "Image Saved to " + dir.getName(), Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.d(LOG_TAG, "Exception in Select Image!");
+            e.printStackTrace();
+        }
+    }
+
+    private Bitmap getCapturedImage(Uri imageUri)  {
+        Bitmap bitmap = null;
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), imageUri);
+                bitmap = ImageDecoder.decodeBitmap(source);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return bitmap;
+    }
 }

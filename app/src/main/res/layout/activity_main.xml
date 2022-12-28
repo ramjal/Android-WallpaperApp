@@ -86,12 +86,21 @@
         android:id="@+id/btnImages"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Images"
+        android:layout_marginTop="8dp"
+        android:onClick="btnAddImageClicked"
+        android:text="Add Image"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline2"
-        android:onClick="btnImagesClicked"/>
+        app:layout_constraintTop_toTopOf="@+id/guideline2" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewImageList"
+        android:layout_width="wrap_content"
+        android:layout_height="490dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnImages" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

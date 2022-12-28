@@ -74,7 +74,7 @@ public class PictureEditActivity extends AppCompatActivity {
         displayHeight = size.y;
 
         imgView2Edit = findViewById(R.id.imgView2Edit);
-        imageModel = (ImageModel) Parcels.unwrap(getIntent().getParcelableExtra(PictureActivity.IMAGE_MODEL));
+        imageModel = (ImageModel) Parcels.unwrap(getIntent().getParcelableExtra(MainActivity.IMAGE_MODEL));
         filePath = imageModel.getFile().getAbsolutePath();
     }
 
@@ -210,7 +210,7 @@ public class PictureEditActivity extends AppCompatActivity {
                     try {
                         if (imageModel.file.delete()) {
                             Intent replyIntent = new Intent();
-                            replyIntent.putExtra(PictureActivity.DELETE_MESSAGE, imageModel.getName() + " is now deleted!");
+                            replyIntent.putExtra(MainActivity.DELETE_MESSAGE, imageModel.getName() + " is now deleted!");
                             setResult(RESULT_OK, replyIntent);
                             finish();
                             //Toast.makeText(PictureEditActivity.this, imageModel.getName() + " is now deleted!", Toast.LENGTH_SHORT).show();
