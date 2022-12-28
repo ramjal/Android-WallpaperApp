@@ -11,6 +11,8 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 
@@ -149,6 +151,10 @@ public class MainActivity extends AppCompatActivity {
     public void btnImagesClicked(View view) {
         Intent intent = new Intent(appContext, PictureActivity.class);
         startActivity(intent);
+    }
+
+    public void startTimeClicked(View view) {
+        Toast.makeText(this, "Start Time Clicked! " , Toast.LENGTH_LONG).show();
     }
 
     //endregion

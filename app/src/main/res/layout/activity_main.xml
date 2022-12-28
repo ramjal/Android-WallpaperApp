@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_begin="215dp" />
+        app:layout_constraintGuide_begin="183dp" />
 
     <TextView
         android:id="@+id/textLabel"
@@ -29,6 +29,7 @@
         android:id="@+id/spnInerval"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:paddingHorizontal="0dp"
         android:paddingVertical="6dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
@@ -43,6 +44,19 @@
         app:layout_constraintBottom_toBottomOf="@+id/textLabel"
         app:layout_constraintEnd_toStartOf="@+id/textLabel"
         app:layout_constraintTop_toTopOf="@+id/textLabel" />
+
+    <TextView
+        android:id="@+id/textStartTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:gravity="center"
+        android:onClick="startTimeClicked"
+        android:text="6:00 PM"
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/spnInerval"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"

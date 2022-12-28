@@ -31,7 +31,7 @@ public class AlarmUtils {
         alarmIntent.putExtra(IMAGE_PATH_ARRAY,
                 ImageUtils.getImagesNameArray(ImageUtils.getImagesList(context)));
         PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context,
-                PRIVATE_REQUEST_ID, alarmIntent, FLAG_UPDATE_CURRENT);
+                PRIVATE_REQUEST_ID, alarmIntent, FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         if (alarmManager != null && alarmPendingIntent != null) {
             alarmManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, triggerTime, repeatInterval,
                     alarmPendingIntent);
@@ -44,7 +44,7 @@ public class AlarmUtils {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
         PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, PRIVATE_REQUEST_ID,
-                alarmIntent, PendingIntent.FLAG_NO_CREATE);
+                alarmIntent, PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
         if (alarmManager != null && alarmPendingIntent != null) {
             alarmManager.cancel(alarmPendingIntent);
             alarmPendingIntent.cancel();
