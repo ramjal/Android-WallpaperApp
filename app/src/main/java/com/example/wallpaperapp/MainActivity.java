@@ -1,23 +1,24 @@
 package com.example.wallpaperapp;
 
 import android.app.Activity;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.ImageDecoder;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -31,13 +32,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.parceler.Parcels;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements ImagesRecViewAdapter.OnPictureClickListener {
 
@@ -52,12 +49,14 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
     public static final String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
     public static final String IMAGE_MODEL = "wallpaperapp.IMAGE_MODEL";
     public static final String DELETE_MESSAGE = "wallpaperapp.DELETE_MESSAGE";
+    int startHour, startMinute;
 
     private SharedPreferences sharedPreferences;
     private Context appContext;
     private Spinner spnInerval;
     private TextView txtIndex;
     private TextView txtTime;
+    private TextView txtStartTime;
     private SwitchCompat btnStartStop;
     private int selectedIntervalHour;
     private int pictureIndex;
@@ -65,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
     private boolean isAlarmAlreadySet;
     private ImagesRecViewAdapter recviewAdapter;
     private int lastPosition;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         //Set internal variables for Views
         txtIndex = findViewById(R.id.txtIndex);
         txtTime = findViewById(R.id.txtTime);
+        txtStartTime = findViewById(R.id.txtStartTime);
         spnInerval = findViewById(R.id.spnInerval);
         btnStartStop = findViewById(R.id.btnStartStop);
 
@@ -103,11 +104,33 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         initializeData();
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.action_bar, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        if (id == R.id.action_add_image) {
+            handleAddImage();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
     @Override
     protected void onPause() {
         super.onPause();
         SaveSharedData();
     }
+
 
     //Create shared object and save the needed data
     private void SaveSharedData() {
@@ -118,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         preferencesEditor.apply();
         Log.d(TAG, "sharedPreferences.ALARM_ON_OFF is: " + isOn);
     }
+
 
     private void initializeData() {
         //Here we pass appContext instead of this just to have less memory leak application context is smaller than the activity context
@@ -139,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         btnStartStop.setChecked(isAlarmAlreadySet);
     }
 
+
     private void setSpinnerData() {
         List<String> intervalsText = Arrays.asList("1 hour", "2 hours", "6 hours", "12 hours", "day", "week");
         intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24 * 7);
@@ -154,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
 
         spnInerval.setAdapter(intervalAdapter);
     }
+
 
     //btnStartStopChanged event handler
     class btnStartStopChanged implements CompoundButton.OnCheckedChangeListener {
@@ -172,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         }
     }
 
+
     //spinnerInerval OnItemSelected event handler
     class spnInervalOnItemSelected implements AdapterView.OnItemSelectedListener {
         @Override
@@ -184,16 +211,35 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         }
     }
 
-    public void btnImagesClicked(View view) {
-        Intent intent = new Intent(appContext, PictureActivity.class);
-        startActivity(intent);
-    }
 
     public void startTimeClicked(View view) {
-        Toast.makeText(this, "Start Time Clicked! " , Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "Start Time Clicked! " , Toast.LENGTH_LONG).show();
+        TimePickerDialog timePickerDialog = new TimePickerDialog(
+                MainActivity.this,
+                new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        //Initialize hour and minute
+                        startHour = hourOfDay;
+                        startMinute = minute;
+                        //Initialize calendar
+                        Calendar calendar = Calendar.getInstance();
+                        //Set hour and mintute
+                        calendar.set(0, 0, 0, startHour, startMinute);
+                        //Set selected time on text view
+                        txtStartTime.setText(DateFormat.format("hh:mm aa", calendar));
+                    }
+                }, 12, 0, false
+        );
+        //Display previous selected time
+        timePickerDialog.updateTime(startHour, startMinute);
+        //Show dialog
+        timePickerDialog.show();
     }
 
-    public void btnAddImageClicked(View view) {
+
+    public void handleAddImage() {
+        //Toast.makeText(appContext, "Add Image Click Not Implemented", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent();
         intent.setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
@@ -213,16 +259,17 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
                             if(null != result.getData().getClipData()) { // checking multiple selection or not
                                 for(int i = 0; i < result.getData().getClipData().getItemCount(); i++) {
                                     Uri uri = result.getData().getClipData().getItemAt(i).getUri();
-                                    addImageFileToAppStorage(uri);
+                                    ImageUtils.addImageFileToAppStorage(appContext, uri, recviewAdapter);
                                 }
                             } else {
                                 Uri uri = result.getData().getData();
-                                addImageFileToAppStorage(uri);
+                                ImageUtils.addImageFileToAppStorage(appContext, uri, recviewAdapter);
                             }
                         }
                     }
                 }
             });
+
 
     //implemented ImagesRecViewAdapter.OnPictureClickListener
     @Override
@@ -234,11 +281,13 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         pictureEditActivityResultLauncher.launch(intent);
     }
 
+
     @Override
     public boolean onPictureLongClick(int position) {
         Toast.makeText(appContext, "Long Click Not Implemented", Toast.LENGTH_SHORT).show();
         return true;
     }
+
 
     ActivityResultLauncher<Intent> pictureEditActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -247,6 +296,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
+                        assert data != null;
                         String message = data.getStringExtra(DELETE_MESSAGE);
                         if (message != null && lastPosition >= 0) {
                             recviewAdapter.getImagesList().remove(lastPosition);
@@ -258,47 +308,5 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
                 }
             });
 
-    private void addImageFileToAppStorage(Uri uri) {
-        try {
-            Bitmap bitmap = getCapturedImage(uri);
 
-            File dir = ImageUtils.getAppSpecificPictureStorageDir(this);
-            if (dir == null || !dir.exists()) {
-                assert dir != null;
-                Toast.makeText(this, "Cannot find directory: " + dir.getName(), Toast.LENGTH_LONG).show();
-                return;
-            }
-            //Create new instance of a file
-            File file = new File(dir, System.currentTimeMillis() + ".jpg");
-            OutputStream outputStream = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-            outputStream.flush();
-            outputStream.close();
-            recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
-            Toast.makeText(this, "Image Saved to " + dir.getName(), Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            Log.d(LOG_TAG, "Exception in Select Image!");
-            e.printStackTrace();
-        }
-    }
-
-    private Bitmap getCapturedImage(Uri imageUri)  {
-        Bitmap bitmap = null;
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            try {
-                ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), imageUri);
-                bitmap = ImageDecoder.decodeBitmap(source);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return bitmap;
-    }
 }

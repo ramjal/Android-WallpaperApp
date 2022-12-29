@@ -9,32 +9,18 @@
     tools:context=".MainActivity">
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
+        android:id="@+id/guidelineVertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_begin="183dp" />
+        app:layout_constraintGuide_end="220dp" />
 
-    <TextView
-        android:id="@+id/textLabel"
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineHorizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set every"
-        android:textColor="?android:attr/textColorPrimary"
-        app:layout_constraintBottom_toTopOf="@+id/guideline2"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Spinner
-        android:id="@+id/spnInerval"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:paddingHorizontal="0dp"
-        android:paddingVertical="6dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline2"
-        app:layout_constraintStart_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="50dp" />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/btnStartStop"
@@ -46,61 +32,65 @@
         app:layout_constraintTop_toTopOf="@+id/textLabel" />
 
     <TextView
-        android:id="@+id/textStartTime"
+        android:id="@+id/textLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/set_every"
+        android:textColor="?android:attr/textColorPrimary"
+        app:layout_constraintBottom_toTopOf="@+id/guidelineHorizontal"
+        app:layout_constraintEnd_toStartOf="@+id/guidelineVertical"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/spnInerval"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:paddingHorizontal="0dp"
+        android:paddingVertical="6dp"
+        app:layout_constraintBottom_toTopOf="@+id/guidelineHorizontal"
+        app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txtStartTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:gravity="center"
         android:onClick="startTimeClicked"
-        android:text="6:00 PM"
-        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        android:text="@string/start_time"
+        android:textColor="?android:attr/textColorPrimary"
+        app:layout_constraintBottom_toTopOf="@+id/guidelineHorizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/spnInerval"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_begin="60dp" />
 
     <TextView
         android:id="@+id/txtIndex"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintBottom_toBottomOf="@+id/spnInerval"
-        app:layout_constraintEnd_toStartOf="@+id/btnStartStop"
-        app:layout_constraintTop_toTopOf="@+id/spnInerval" />
+        app:layout_constraintStart_toStartOf="@id/recyclerViewImageList"
+        app:layout_constraintTop_toTopOf="@+id/guidelineHorizontal" />
 
     <TextView
         android:id="@+id/txtTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="@+id/txtIndex"
-        app:layout_constraintTop_toBottomOf="@+id/txtIndex" />
-
-    <Button
-        android:id="@+id/btnImages"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:onClick="btnAddImageClicked"
-        android:text="Add Image"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline2" />
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toEndOf="@+id/txtIndex"
+        app:layout_constraintTop_toTopOf="@+id/guidelineHorizontal"  />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewImageList"
         android:layout_width="wrap_content"
-        android:layout_height="490dp"
+        android:layout_height="0dp"
         android:layout_gravity="center"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnImages" />
+        app:layout_constraintTop_toTopOf="@+id/guidelineHorizontal" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
