@@ -13,6 +13,8 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static com.example.wallpaperapp.MainActivity.IMAGE_PATH_ARRAY;
 import static com.example.wallpaperapp.MainActivity.PRIVATE_REQUEST_ID;
 
+import java.util.Calendar;
+
 public class AlarmUtils {
     private static final String TAG = AlarmUtils.class.getSimpleName();
 
@@ -23,7 +25,7 @@ public class AlarmUtils {
         return (alarmPendingIntent != null);
     }
 
-    public static void startAlarm(Context context, int selectedIntervalHour) {
+    public static void startAlarm(Context context, int selectedIntervalHour, int startHour, int startMinute) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
         long repeatInterval = selectedIntervalHour * 3600 * 1000;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
@@ -38,6 +40,20 @@ public class AlarmUtils {
             Log.d(TAG, "Started the Wallpaper alarm");
             Toast.makeText(context, "Wallpaper is On!", Toast.LENGTH_SHORT).show();
         }
+
+        Calendar cal1 = Calendar.getInstance();
+
+        Calendar cal2 = Calendar.getInstance();
+        cal2.set(Calendar.HOUR, startHour);
+        cal2.set(Calendar.MINUTE, startMinute);
+
+        int ret = cal1.compareTo(cal2);
+
+        long cal1Milli = cal1.getTimeInMillis();
+        long cal2Milli = cal2.getTimeInMillis();
+
+        long dif = cal1Milli - cal2Milli;
+
     }
 
     public static void stopAlarm(Context context) {

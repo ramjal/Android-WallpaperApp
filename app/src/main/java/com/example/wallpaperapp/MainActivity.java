@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
                 updateControls(false);
                 if (!isAlarmAlreadySet) {
                     int selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS, 1);
-                    AlarmUtils.startAlarm(appContext, selectedIntervalHour);
+                    AlarmUtils.startAlarm(appContext, selectedIntervalHour, startHour, startMinute);
                 }
             } else {
                 updateControls(true);
@@ -241,27 +241,8 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
                         Calendar startTime = Calendar.getInstance();
                         //Set hour and minute
                         startTime.set(0, 0, 0, startHour, startMinute);
-
-                        Calendar cal1 = Calendar.getInstance();
-
-                        Calendar cal2 = Calendar.getInstance();
-                        cal2.set(Calendar.HOUR, startHour);
-                        cal2.set(Calendar.MINUTE, startMinute);
-
-                        int ret = cal1.compareTo(cal2);
-
-                        long cal1Milli = cal1.getTimeInMillis();
-                        long cal2Milli = cal2.getTimeInMillis();
-
-                        long dif = cal1Milli - cal2Milli;
-
                         //Set selected time on text view
                         txtStartTime.setText(DateFormat.format("hh:mm aa", startTime));
-
-                        Log.d(TAG, "StatTime: " + startTime.toString());
-                        Log.d(TAG, "StatTime: " + Calendar.getInstance().toString());
-
-                        //Toast.makeText(appContext, startTime.toString(), Toast.LENGTH_LONG).show();
                     }
                 }, 12, 0, false
         );
