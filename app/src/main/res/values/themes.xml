@@ -23,6 +23,10 @@
 <!--        <item name="android:windowtr">true</item>-->
     </style>
 
+    <style name="SpinnerTextView" parent="@android:style/Widget.TextView">
+        <item name="android:textColor">@drawable/text_text_color</item>
+    </style>
+
     <style name="AlertDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
         <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
