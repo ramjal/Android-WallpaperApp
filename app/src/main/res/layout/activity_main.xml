@@ -27,12 +27,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
-        app:layout_constraintBottom_toBottomOf="@+id/textLabel"
-        app:layout_constraintEnd_toStartOf="@+id/textLabel"
-        app:layout_constraintTop_toTopOf="@+id/textLabel" />
+        app:layout_constraintBottom_toBottomOf="@+id/txtLabel"
+        app:layout_constraintEnd_toStartOf="@+id/txtLabel"
+        app:layout_constraintTop_toTopOf="@+id/txtLabel" />
 
     <TextView
-        android:id="@+id/textLabel"
+        android:id="@+id/txtLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/set_every"

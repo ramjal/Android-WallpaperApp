@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.parceler.Parcels;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Calendar;
 
@@ -42,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final int PRIVATE_REQUEST_ID = 11;
     public static final String INTERVAL_HOURS = "interval_hours";
+    public static final String START_HOUR = "start_hour";
+    public static final String START_MINUTE = "start_minute";
     public static final String ALARM_ON_OFF = "alarm_on_off";
     public static final String IMAGE_PATH_ARRAY = "images_path_array";
     public static final String IMAGE_INDEX = "images_index";
@@ -49,11 +52,12 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
     public static final String SHARED_PREF_FILE_NAME = "com.example.wallpaperapp";
     public static final String IMAGE_MODEL = "wallpaperapp.IMAGE_MODEL";
     public static final String DELETE_MESSAGE = "wallpaperapp.DELETE_MESSAGE";
-    int startHour, startMinute;
 
     private SharedPreferences sharedPreferences;
+    //Here we pass appContext instead of 'this' just to have less memory leak. Application context is smaller than the activity context.
     private Context appContext;
     private Spinner spnInerval;
+    private TextView txtLabel;
     private TextView txtIndex;
     private TextView txtTime;
     private TextView txtStartTime;
@@ -64,7 +68,8 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
     private boolean isAlarmAlreadySet;
     private ImagesRecViewAdapter recviewAdapter;
     private int lastPosition;
-
+    private int startHour, startMinute;
+    private long startTimeInMilliSec;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,25 +79,25 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         pictureIndex = 0;
 
         //Set internal variables for Views
+        txtLabel = findViewById(R.id.txtLabel);
         txtIndex = findViewById(R.id.txtIndex);
         txtTime = findViewById(R.id.txtTime);
         txtStartTime = findViewById(R.id.txtStartTime);
         spnInerval = findViewById(R.id.spnInerval);
         btnStartStop = findViewById(R.id.btnStartStop);
 
-        //Set event handlers
+        // Set event handlers
         spnInerval.setOnItemSelectedListener(new spnInervalOnItemSelected());
         btnStartStop.setOnCheckedChangeListener(new btnStartStopChanged());
 
-        //Get the shared preferences for reading app saved data
+        // Get the shared preferences for reading app saved data
         sharedPreferences = getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
 
-        lastPosition = -1;
+        // Set up RecyclerView
         RecyclerView recviewImageList = findViewById(R.id.recyclerViewImageList);
         recviewAdapter = new ImagesRecViewAdapter(this, this);
         recviewAdapter.setImagesList(ImageUtils.getImagesList(this));
         recviewImageList.setAdapter(recviewAdapter);
-
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             recviewImageList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         } else {
@@ -100,30 +105,8 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
             recviewImageList.setLayoutManager(new GridLayoutManager(this, 2));
         }
 
-        setSpinnerData();
         initializeData();
     }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.action_bar, menu);
-        return true;
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        int id = item.getItemId();
-        if (id == R.id.action_add_image) {
-            handleAddImage();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
 
     @Override
     protected void onPause() {
@@ -131,25 +114,36 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         SaveSharedData();
     }
 
-
-    //Create shared object and save the needed data
-    private void SaveSharedData() {
-        SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
-        preferencesEditor.putInt(INTERVAL_HOURS, selectedIntervalHour);
-        boolean isOn = btnStartStop.isChecked();
-        preferencesEditor.putBoolean(ALARM_ON_OFF, isOn);
-        preferencesEditor.apply();
-        Log.d(TAG, "sharedPreferences.ALARM_ON_OFF is: " + isOn);
+    private void initializeData() {
+        lastPosition = -1;
+        initializeSpinner();
+        initializeStartTime();
+        initializeInterval();
+        initializeAlarmControls();
     }
 
+    private void initializeSpinner() {
+        List<String> intervalsText = Arrays.asList("1 hour", "2 hours", "6 hours", "12 hours", "day", "week");
+        intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24 * 7);
+        ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(appContext, R.layout.spinner_item, intervalsText);
+        spnInerval.setAdapter(intervalAdapter);
+    }
 
-    private void initializeData() {
-        //Here we pass appContext instead of this just to have less memory leak application context is smaller than the activity context
+    private void initializeStartTime() {
+        startHour = sharedPreferences.getInt(START_HOUR, 0);
+        startMinute = sharedPreferences.getInt(START_MINUTE, 0);
+        Calendar startTime = Calendar.getInstance();
+        startTime.set(0, 0, 0, startHour, startMinute);
+        txtStartTime.setText(DateFormat.format("hh:mm aa", startTime));
+    }
+
+    private void initializeInterval() {
         selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS, 1);
-        boolean isOn = sharedPreferences.getBoolean(ALARM_ON_OFF, false);
-        Log.d(TAG, "sharedPreferences.ALARM_ON_OFF is: " + isOn);
         int position = intervalsNumber.indexOf(selectedIntervalHour);
         spnInerval.setSelection(position);
+    }
+
+    private void initializeAlarmControls() {
         if (AlarmUtils.alarmIsSet(appContext)) {
             isAlarmAlreadySet = true;
             txtTime.setText(sharedPreferences.getString(LAST_ALARM, "Unknown"));
@@ -164,20 +158,35 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
     }
 
 
-    private void setSpinnerData() {
-        List<String> intervalsText = Arrays.asList("1 hour", "2 hours", "6 hours", "12 hours", "day", "week");
-        intervalsNumber = Arrays.asList(1, 2, 6, 12, 24, 24 * 7);
+    //Create shared object and save the needed data
+    private void SaveSharedData() {
+        SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
+        preferencesEditor.putInt(INTERVAL_HOURS, selectedIntervalHour);
+        preferencesEditor.putInt(START_HOUR, startHour);
+        preferencesEditor.putInt(START_MINUTE, startMinute);
+        boolean isOn = btnStartStop.isChecked();
+        preferencesEditor.putBoolean(ALARM_ON_OFF, isOn);
+        preferencesEditor.apply();
+        Log.d(TAG, "sharedPreferences.ALARM_ON_OFF is: " + isOn);
+    }
 
-        ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
-                appContext, R.layout.spinner_item, intervalsText);
-//
-//        ArrayAdapter<String> intervalAdapter = new ArrayAdapter<>(
-//                appContext, android.R.layout.simple_spinner_dropdown_item, intervalsText);
-        //simple_spinner_item
-        //simple_dropdown_item_1line
-        //simple_selectable_list_item
 
-        spnInerval.setAdapter(intervalAdapter);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.action_bar, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        if (id == R.id.action_add_image) {
+            handleAddImage();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 
@@ -186,16 +195,22 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
-                spnInerval.setEnabled(false);
+                updateControls(false);
                 if (!isAlarmAlreadySet) {
                     int selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS, 1);
                     AlarmUtils.startAlarm(appContext, selectedIntervalHour);
                 }
             } else {
-                spnInerval.setEnabled(true);
+                updateControls(true);
                 AlarmUtils.stopAlarm(appContext);
             }
         }
+    }
+
+    private void updateControls(boolean value) {
+        spnInerval.setEnabled(value);
+        txtLabel.setEnabled(value);
+        txtStartTime.setEnabled(value);
     }
 
 
@@ -223,11 +238,30 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
                         startHour = hourOfDay;
                         startMinute = minute;
                         //Initialize calendar
-                        Calendar calendar = Calendar.getInstance();
-                        //Set hour and mintute
-                        calendar.set(0, 0, 0, startHour, startMinute);
+                        Calendar startTime = Calendar.getInstance();
+                        //Set hour and minute
+                        startTime.set(0, 0, 0, startHour, startMinute);
+
+                        Calendar cal1 = Calendar.getInstance();
+
+                        Calendar cal2 = Calendar.getInstance();
+                        cal2.set(Calendar.HOUR, startHour);
+                        cal2.set(Calendar.MINUTE, startMinute);
+
+                        int ret = cal1.compareTo(cal2);
+
+                        long cal1Milli = cal1.getTimeInMillis();
+                        long cal2Milli = cal2.getTimeInMillis();
+
+                        long dif = cal1Milli - cal2Milli;
+
                         //Set selected time on text view
-                        txtStartTime.setText(DateFormat.format("hh:mm aa", calendar));
+                        txtStartTime.setText(DateFormat.format("hh:mm aa", startTime));
+
+                        Log.d(TAG, "StatTime: " + startTime.toString());
+                        Log.d(TAG, "StatTime: " + Calendar.getInstance().toString());
+
+                        //Toast.makeText(appContext, startTime.toString(), Toast.LENGTH_LONG).show();
                     }
                 }, 12, 0, false
         );
@@ -248,6 +282,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         //intent.setAction(Intent.ACTION_GET_CONTENT); //Use this to show Google Drive, Downloads and others
         selectPictureResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
     }
+
 
     ActivityResultLauncher<Intent> selectPictureResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
