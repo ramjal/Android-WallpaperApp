@@ -19,9 +19,15 @@
     <item
         android:id="@+id/action_set_image"
         android:orderInCategory="300"
-        android:title="Set"
+        android:title="Set Image"
         android:icon="@drawable/ic_check_circle"
         app:showAsAction="always" />
 
+    <item
+        android:id="@+id/action_set_wallpaper"
+        android:orderInCategory="300"
+        android:title="Set Wallpaper"
+        android:icon="@drawable/ic_set_wallpaper"
+        app:showAsAction="always" />
 
 </menu>

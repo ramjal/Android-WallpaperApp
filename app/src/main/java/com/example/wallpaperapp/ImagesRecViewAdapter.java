@@ -55,7 +55,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     @Override
     public void onBindViewHolder(@NonNull PictureViewHolder holder, int position) {
         ImageModel image = imagesList.get(position);
-        holder.txtViewItem.setText(String.valueOf(position));
+        holder.txtViewItem.setText(String.valueOf(position + 1));
         Glide.with(mainContext)
                 .load(image.getFile().getAbsolutePath())
                 .into(holder.imageViewItem);
