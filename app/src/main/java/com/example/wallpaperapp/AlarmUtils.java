@@ -14,6 +14,7 @@ import static com.example.wallpaperapp.MainActivity.IMAGE_PATH_ARRAY;
 import static com.example.wallpaperapp.MainActivity.PRIVATE_REQUEST_ID;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 public class AlarmUtils {
     private static final String TAG = AlarmUtils.class.getSimpleName();
@@ -27,34 +28,43 @@ public class AlarmUtils {
 
     public static void startAlarm(Context context, int selectedIntervalHour, int startHour, int startMinute) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
-        long repeatInterval = selectedIntervalHour * 3600 * 1000;
-        // repeatInterval =  60 * 1000; // For testing
-        long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
+        long intervalMillis = selectedIntervalHour * 60 * 60 * 1000;
+        int startTimeMilli = getStartTimeInMillis(startHour, startMinute);
+        long triggerAtMillis = SystemClock.elapsedRealtime() + startTimeMilli;
+
+        String message = String.format("StartHour = %d - StartMinute = %d - startTimeMilli = %d", startHour, startMinute, startTimeMilli);
+        Log.d(TAG, message);
+
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
-        alarmIntent.putExtra(IMAGE_PATH_ARRAY,
-                ImageUtils.getImagesNameArray(ImageUtils.getImagesList(context)));
+        alarmIntent.putExtra(IMAGE_PATH_ARRAY, ImageUtils.getImagesNameArray(ImageUtils.getImagesList(context)));
         PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context,
                 PRIVATE_REQUEST_ID, alarmIntent, FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
         if (alarmManager != null && alarmPendingIntent != null) {
-            alarmManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, triggerTime, repeatInterval,
-                    alarmPendingIntent);
+            alarmManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, triggerAtMillis, intervalMillis, alarmPendingIntent);
             Log.d(TAG, "Started the Wallpaper alarm");
             Toast.makeText(context, "Wallpaper is On!", Toast.LENGTH_SHORT).show();
         }
+    }
 
-        Calendar cal1 = Calendar.getInstance();
-
+    private static int getStartTimeInMillis(int startHour, int startMinute) {
+        Calendar cal1 = Calendar.getInstance(); // Now
         Calendar cal2 = Calendar.getInstance();
-        cal2.set(Calendar.HOUR, startHour);
+        cal2.set(Calendar.HOUR_OF_DAY, startHour);
         cal2.set(Calendar.MINUTE, startMinute);
 
-        int ret = cal1.compareTo(cal2);
+        long diff = cal1.getTimeInMillis() - cal2.getTimeInMillis();
+        int millis = (int) Math.abs(diff);
 
-        long cal1Milli = cal1.getTimeInMillis();
-        long cal2Milli = cal2.getTimeInMillis();
+        if (diff > 0)
+        {
+            millis = (24 * 60 * 60 * 1000) - millis;
+            Log.d(TAG, "Tomorrow in " + millis + " milliseconds ");
+        } else {
+            Log.d(TAG, "Today in " + millis + " milliseconds ");
+        }
 
-        long dif = cal1Milli - cal2Milli;
-
+        return millis;
     }
 
     public static void stopAlarm(Context context) {

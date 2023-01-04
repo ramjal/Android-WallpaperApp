@@ -47,7 +47,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             }
 
             if (ImageUtils.setWallPaper(imagesPathList[pictureIndex], context)) {
-                //LogSuccessMessage();
+                LogSuccessMessage();
                 SaveNewPictureIndex();
             }
         } catch (Exception e) {

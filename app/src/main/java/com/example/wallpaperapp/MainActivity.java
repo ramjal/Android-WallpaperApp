@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
     private ImagesRecViewAdapter recviewAdapter;
     private int lastPosition;
     private int startHour, startMinute;
-    private long startTimeInMilliSec;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,9 +194,12 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
+                SaveSharedData();
                 updateControls(false);
                 if (!isAlarmAlreadySet) {
-                    int selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS, 1);
+                    selectedIntervalHour = sharedPreferences.getInt(INTERVAL_HOURS, 1);
+                    startHour = sharedPreferences.getInt(START_HOUR, 0);
+                    startMinute = sharedPreferences.getInt(START_MINUTE, 0);
                     AlarmUtils.startAlarm(appContext, selectedIntervalHour, startHour, startMinute);
                 }
             } else {
