@@ -16,14 +16,13 @@ public class AlarmReceiver extends BroadcastReceiver {
     private static final String LOG_TAG = AlarmReceiver.class.getSimpleName();
     private String[] imagesPathList;
 
-    private static final String SHARED_PREF_FILE_NAME = "com.example.wallpaper";
     private int pictureIndex;
     private SharedPreferences mPreferences;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onReceive(Context context, Intent intent) {
-        mPreferences = context.getSharedPreferences(SHARED_PREF_FILE_NAME, MODE_PRIVATE);
+        mPreferences = context.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
 
         if (mPreferences != null) {
             pictureIndex = mPreferences.getInt(MainActivity.IMAGE_INDEX, 0);
@@ -46,6 +45,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             if (pictureIndex >= imagesPathList.length) {
                 pictureIndex = 0;
             }
+
             if (ImageUtils.setWallPaper(imagesPathList[pictureIndex], context)) {
                 //LogSuccessMessage();
                 SaveNewPictureIndex();

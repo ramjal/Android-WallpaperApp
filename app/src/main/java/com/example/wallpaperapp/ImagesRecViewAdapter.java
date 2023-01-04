@@ -2,33 +2,22 @@ package com.example.wallpaperapp;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.hardware.display.DisplayManager;
-import android.os.Build;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.WindowMetrics;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-
 import java.util.ArrayList;
 
-import static android.content.Context.MODE_PRIVATE;
 
 public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdapter.PictureViewHolder> {
 
@@ -40,8 +29,6 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     public ImagesRecViewAdapter(Context context, OnPictureClickListener onPictureClickListener) {
         mainContext = context;
         this.onPictureClickListener = onPictureClickListener;
-        //Get the shared preferences for reading app saved data
-        //sharedPreferences = mainContext.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
     }
 
     @NonNull

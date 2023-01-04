@@ -1,9 +1,6 @@
 package com.example.wallpaperapp;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.Activity;
-//import android.app.AlertDialog;
 import androidx.appcompat.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,11 +22,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
-
 import org.parceler.Parcels;
-
 import java.util.Locale;
 import java.util.Objects;
 
@@ -152,15 +146,48 @@ public class PictureEditActivity extends AppCompatActivity {
 
         int id = item.getItemId();
         if (id == R.id.action_set_image) {
-            setWallPaper();
+            setImageRect();
+            return true;
+        } else if (id == R.id.action_set_wallpaper) {
+            setWallpaper();
             return true;
         } else if (id == R.id.action_image_info) {
             displayImageInfo(options);
             return true;
         } else if (id == R.id.action_delete_image) {
-            handleDelete();
+            deleteImage();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    private void setImageRect() {
+        int left = Math.max(Math.round(-rectF.left / scale), 0);
+        int top = Math.max(Math.round(-rectF.top / scale), 0);
+        int right = left + Math.round(displayWidth / scale);
+        int bottom = top + Math.round(displayHeight / scale);
+        Rect visibleRect = new Rect(left, top, right, bottom);
+
+        SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
+        String rectStr = String.format(Locale.CANADA, "%d,%d,%d,%d", visibleRect.left, visibleRect.top, visibleRect.right, visibleRect.bottom);
+        preferencesEditor.putString(imageModel.getName(), rectStr);
+        preferencesEditor.apply();
+
+        Toast.makeText(this, "Image rect is set!", Toast.LENGTH_LONG).show();
+    }
+
+    private void setWallpaper() {
+        Bitmap imageBitmap = BitmapFactory.decodeFile(filePath);
+
+        int left = Math.max(Math.round(-rectF.left / scale), 0);
+        int top = Math.max(Math.round(-rectF.top / scale), 0);
+        int right = left + Math.round(displayWidth / scale);
+        int bottom = top + Math.round(displayHeight / scale);
+        Rect visibleRect = new Rect(left, top, right, bottom);
+
+        ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
+
+        Toast.makeText(this, "Wallpaper is set!", Toast.LENGTH_LONG).show();
     }
 
 
@@ -173,33 +200,7 @@ public class PictureEditActivity extends AppCompatActivity {
     }
 
 
-    private void setWallPaper() {
-        Bitmap imageBitmap = BitmapFactory.decodeFile(filePath);
-
-        Matrix matrix = imgView2Edit.getImageMatrix();
-
-        int imageWidth = imageBitmap.getWidth();
-        int imageHeight = imageBitmap.getHeight();
-
-        int left = Math.max(Math.round(-rectF.left / scale), 0);
-        int top = Math.max(Math.round(-rectF.top / scale), 0);
-
-        int right = left + Math.round(displayWidth / scale);
-        int bottom = top + Math.round(displayHeight / scale);
-
-        Rect visibleRect = new Rect(left, top, right, bottom);
-        //ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
-
-        SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
-        String rectStr = String.format(Locale.CANADA, "%d,%d,%d,%d", visibleRect.left, visibleRect.top, visibleRect.right, visibleRect.bottom);
-        preferencesEditor.putString(imageModel.getName(), rectStr);
-        preferencesEditor.apply();
-        Toast.makeText(this, "Image rect is set!", Toast.LENGTH_LONG).show();
-    }
-
-
-    private void handleDelete() {
-        //Toast.makeText(mainContext, imagesList.get(position).getName() + " Long Pressed!", Toast.LENGTH_SHORT).show();
+    private void deleteImage() {
         AlertDialog.Builder myAlterDialog = new AlertDialog.Builder(this);
         myAlterDialog.setTitle("Delete Image");
         myAlterDialog.setMessage("Are you sure you want to delete this image?");
@@ -244,7 +245,7 @@ public class PictureEditActivity extends AppCompatActivity {
     }
 
 
-    //remove the Title from actoin bar
+    //remove the Title from action bar
     private void clearTitle() {
         Objects.requireNonNull(getSupportActionBar()).setTitle("");
     }

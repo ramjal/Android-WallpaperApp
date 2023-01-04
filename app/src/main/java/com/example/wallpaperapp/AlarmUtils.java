@@ -28,6 +28,7 @@ public class AlarmUtils {
     public static void startAlarm(Context context, int selectedIntervalHour, int startHour, int startMinute) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
         long repeatInterval = selectedIntervalHour * 3600 * 1000;
+        repeatInterval =  60 * 1000;
         long triggerTime = SystemClock.elapsedRealtime() + repeatInterval;
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
         alarmIntent.putExtra(IMAGE_PATH_ARRAY,
