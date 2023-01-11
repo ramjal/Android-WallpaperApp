@@ -36,11 +36,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PictureActivity"
-            android:exported="true">
-
-        </activity>
-        <activity
             android:name=".PictureEditActivity"
             android:exported="true"
             android:theme="@style/Theme.TranslucentBars">
