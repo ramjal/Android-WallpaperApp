@@ -12,7 +12,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,12 +23,14 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import org.parceler.Parcels;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
 
 public class PictureEditActivity extends AppCompatActivity {
-    private final String DEBUG_TAG = PictureEditActivity.class.getSimpleName();
     private SharedPreferences sharedPreferences;
     private ImageView imgView2Edit;
     private Matrix matrix;
@@ -70,7 +71,7 @@ public class PictureEditActivity extends AppCompatActivity {
 
         imgView2Edit = findViewById(R.id.imgView2Edit);
         imageModel = (ImageModel) Parcels.unwrap(getIntent().getParcelableExtra(MainActivity.IMAGE_MODEL));
-        imageIndex = (int) Parcels.unwrap(getIntent().getParcelableExtra(MainActivity.IMAGE_INDEX));
+        imageIndex = (int) Parcels.unwrap(getIntent().getParcelableExtra(MainActivity.IMAGE_INDEX)) + 1;
         filePath = imageModel.getFile().getAbsolutePath();
     }
 
@@ -82,25 +83,19 @@ public class PictureEditActivity extends AppCompatActivity {
                 .into(imgView2Edit);
 
         mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
-        //mScaleGestureDetector.setQuickScaleEnabled(false);
         mGestureDetector = new GestureDetector(this, new ScrollListener());
         imgView2Edit.setOnTouchListener(new ImageOnTouchListener());
 
-        matrix = createImageMatix(imgView2Edit, imageModel);
-        //matrix.setScale(currentScale, currentScale);
-        //matrix.postTranslate(-currentX, -currentY);
+        matrix = createImageMatix(imageModel);
         imgView2Edit.setImageMatrix(matrix);
     }
 
 
-    private Matrix createImageMatix(ImageView imageView, ImageModel image) {
+    private Matrix createImageMatix(ImageModel image) {
         Matrix matrix = null;
-
         String imagePath = image.getFile().getAbsolutePath();
-        //image.rectStr = sharedPreferences.getString(image.getName(), null);
         if (image.rectStr != null) {
             BitmapFactory.Options options = ImageUtils.getImageOptions(imagePath);
-            DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
             int imageViewWidth = displayWidth;//displayMetrics.widthPixels;
             int imageViewHeight = displayHeight;//displayMetrics.heightPixels;
             float aspectImageView = (float) imageViewWidth / imageViewHeight;
@@ -122,7 +117,7 @@ public class PictureEditActivity extends AppCompatActivity {
                         Integer.parseInt(arrayRect[3]) * scale);
                 RectF viewRect = new RectF(0, 0, imageViewWidth, imageViewHeight);
                 matrix = new Matrix();
-                boolean result = matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
+                matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
             }
         }
         if (matrix == null) {
@@ -192,6 +187,8 @@ public class PictureEditActivity extends AppCompatActivity {
 
         SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
         preferencesEditor.putInt(MainActivity.IMAGE_INDEX, imageIndex);
+        String time = new SimpleDateFormat("HH:mm", Locale.CANADA).format(new Date());
+        preferencesEditor.putString(MainActivity.LAST_ALARM, time);
         preferencesEditor.apply();
 
         Toast.makeText(this, "Wallpaper is set!", Toast.LENGTH_LONG).show();
@@ -241,7 +238,7 @@ public class PictureEditActivity extends AppCompatActivity {
     }
 
 
-    //Clean up extra bars from the top and the buttom
+    //Clean up extra bars from the top and the bottom
     private void removeStatusAndNavBar() {
         Objects.requireNonNull(getSupportActionBar()).hide(); //hide the title bar
 
@@ -339,8 +336,7 @@ public class PictureEditActivity extends AppCompatActivity {
             }
             return true;
         }
-
-
     }
+
     //endregion
 }
