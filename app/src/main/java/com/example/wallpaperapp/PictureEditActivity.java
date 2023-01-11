@@ -35,6 +35,7 @@ public class PictureEditActivity extends AppCompatActivity {
     private Matrix matrix;
     private String filePath;
     private ImageModel imageModel;
+    private int imageIndex;
     private Float currentScale = 1f;
     private Float currentX = 0f;
     private Float currentY = 0f;
@@ -69,6 +70,7 @@ public class PictureEditActivity extends AppCompatActivity {
 
         imgView2Edit = findViewById(R.id.imgView2Edit);
         imageModel = (ImageModel) Parcels.unwrap(getIntent().getParcelableExtra(MainActivity.IMAGE_MODEL));
+        imageIndex = (int) Parcels.unwrap(getIntent().getParcelableExtra(MainActivity.IMAGE_INDEX));
         filePath = imageModel.getFile().getAbsolutePath();
     }
 
@@ -103,7 +105,7 @@ public class PictureEditActivity extends AppCompatActivity {
             int imageViewHeight = displayHeight;//displayMetrics.heightPixels;
             float aspectImageView = (float) imageViewWidth / imageViewHeight;
             float aspectPicture = (float) options.outWidth / options.outHeight;
-            float scale = 1f;
+            float scale;
 
             if (aspectImageView > aspectPicture) {
                 scale = (float) imageViewWidth / options.outWidth;
@@ -176,6 +178,7 @@ public class PictureEditActivity extends AppCompatActivity {
         Toast.makeText(this, "Image rect is set!", Toast.LENGTH_LONG).show();
     }
 
+
     private void setWallpaper() {
         Bitmap imageBitmap = BitmapFactory.decodeFile(filePath);
 
@@ -186,6 +189,10 @@ public class PictureEditActivity extends AppCompatActivity {
         Rect visibleRect = new Rect(left, top, right, bottom);
 
         ImageUtils.setWallPaper(imageBitmap, this, visibleRect);
+
+        SharedPreferences.Editor preferencesEditor = sharedPreferences.edit();
+        preferencesEditor.putInt(MainActivity.IMAGE_INDEX, imageIndex);
+        preferencesEditor.apply();
 
         Toast.makeText(this, "Wallpaper is set!", Toast.LENGTH_LONG).show();
     }

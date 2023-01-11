@@ -9,13 +9,12 @@ import android.util.Log;
 import static android.content.Context.MODE_PRIVATE;
 
 public class RestartAlarmsReceiver extends BroadcastReceiver {
-    private static String TAG = RestartAlarmsReceiver.class.getSimpleName();
-    private static SharedPreferences sharedPreferences;
+    private static final String TAG = RestartAlarmsReceiver.class.getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {
         if ("android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
-            sharedPreferences = context.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
+            SharedPreferences sharedPreferences = context.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
 
             if (sharedPreferences == null) return;
             boolean isOn = sharedPreferences.getBoolean(MainActivity.ALARM_ON_OFF, false);
@@ -27,7 +26,7 @@ public class RestartAlarmsReceiver extends BroadcastReceiver {
                 AlarmUtils.startAlarm(context, selectedIntervalHour, startHour, startMinute);
             }
         } else {
-            Log.d(TAG, "Received unexpected intent " + intent.toString());
+            Log.d(TAG, "Received unexpected intent " + intent);
         }
     }
 }

@@ -7,14 +7,12 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
+import java.util.Calendar;
 
 import static android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static com.example.wallpaperapp.MainActivity.IMAGE_PATH_ARRAY;
 import static com.example.wallpaperapp.MainActivity.PRIVATE_REQUEST_ID;
-
-import java.util.Calendar;
-import java.util.Locale;
 
 public class AlarmUtils {
     private static final String TAG = AlarmUtils.class.getSimpleName();
@@ -27,13 +25,13 @@ public class AlarmUtils {
     }
 
     public static void startAlarm(Context context, int selectedIntervalHour, int startHour, int startMinute) {
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
-        long intervalMillis = selectedIntervalHour * 60 * 60 * 1000;
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        int intervalMillis = selectedIntervalHour * 60 * 60 * 1000;
         int startTimeMilli = getStartTimeInMillis(startHour, startMinute);
         long triggerAtMillis = SystemClock.elapsedRealtime() + startTimeMilli;
 
-        String message = String.format("StartHour = %d - StartMinute = %d - startTimeMilli = %d", startHour, startMinute, startTimeMilli);
-        Log.d(TAG, message);
+        //String message = String.format("StartHour = %d - StartMinute = %d - startTimeMilli = %d", startHour, startMinute, startTimeMilli);
+        //Log.d(TAG, message);
 
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
         alarmIntent.putExtra(IMAGE_PATH_ARRAY, ImageUtils.getImagesNameArray(ImageUtils.getImagesList(context)));
@@ -68,7 +66,7 @@ public class AlarmUtils {
     }
 
     public static void stopAlarm(Context context) {
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
         PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, PRIVATE_REQUEST_ID,
                 alarmIntent, PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);

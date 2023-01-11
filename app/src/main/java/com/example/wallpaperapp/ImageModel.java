@@ -1,7 +1,5 @@
 package com.example.wallpaperapp;
 
-import android.graphics.Rect;
-
 import org.parceler.Parcel;
 
 import java.io.File;
@@ -24,16 +22,8 @@ public class ImageModel {
         return file;
     }
 
-    public void setFile(File file) {
-        this.file = file;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public ImageModel(File file, String name, String rectStr) {

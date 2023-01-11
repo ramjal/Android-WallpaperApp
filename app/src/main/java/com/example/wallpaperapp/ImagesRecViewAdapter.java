@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -21,10 +20,9 @@ import java.util.ArrayList;
 
 public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdapter.PictureViewHolder> {
 
-    //private final SharedPreferences sharedPreferences;
     private static ArrayList<ImageModel> imagesList;
     private final Context mainContext;
-    private OnPictureClickListener onPictureClickListener;
+    private final OnPictureClickListener onPictureClickListener;
 
     public ImagesRecViewAdapter(Context context, OnPictureClickListener onPictureClickListener) {
         mainContext = context;
@@ -35,8 +33,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     @Override
     public PictureViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.images_list_item, parent, false);
-        PictureViewHolder holder = new PictureViewHolder(view, onPictureClickListener);
-        return holder;
+        return new PictureViewHolder(view, onPictureClickListener);
     }
 
     @Override
@@ -60,7 +57,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
             int imageViewHeight = imageView.getLayoutParams().height;
             float aspectImageView = (float) imageViewWidth / imageViewHeight;
             float aspectPicture = (float) options.outWidth / options.outHeight;
-            float scale = 1f;
+            float scale;
 
             if (aspectImageView > aspectPicture) {
                 scale = (float) imageViewWidth / options.outWidth;
@@ -77,7 +74,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
                         Integer.parseInt(arrayRect[3]) * scale);
                 RectF viewRect = new RectF(0, 0, imageViewWidth, imageViewHeight);
                 matrix = new Matrix();
-                boolean result = matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
+                matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
             }
         }
         if (matrix == null) {
@@ -94,7 +91,7 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
         float aspectView = (float) imageView.getLayoutParams().width / imageView.getLayoutParams().height;
         float aspectImage = (float) ImageUtils.getImageOptions(imagePath).outWidth / ImageUtils.getImageOptions(imagePath).outHeight;
 
-        float ratio = 1f;
+        float ratio;
         if (aspectView > aspectImage) {
             ratio = (float) imageView.getLayoutParams().width / ImageUtils.getImageOptions(imagePath).outWidth;
             dy = (ImageUtils.getImageOptions(imagePath).outHeight * ratio - imageView.getLayoutParams().height) / 2;
@@ -122,14 +119,12 @@ public class ImagesRecViewAdapter extends RecyclerView.Adapter<ImagesRecViewAdap
     }
 
     public class PictureViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
-        private final CardView cardView;
         private final ImageView imageViewItem;
         private final TextView txtViewItem;
         private final OnPictureClickListener onPictureClickListener;
 
         public PictureViewHolder(@NonNull View itemView, OnPictureClickListener onPictureClickListener) {
             super(itemView);
-            cardView = itemView.findViewById(R.id.cardView);
             imageViewItem = itemView.findViewById(R.id.imgViewItem);
             txtViewItem = itemView.findViewById(R.id.txtViewItem);
 

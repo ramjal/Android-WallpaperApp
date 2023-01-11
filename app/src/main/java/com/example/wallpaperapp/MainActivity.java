@@ -33,13 +33,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.parceler.Parcels;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements ImagesRecViewAdapter.OnPictureClickListener {
 
-    private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final int PRIVATE_REQUEST_ID = 11;
     public static final String INTERVAL_HOURS = "interval_hours";
@@ -296,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements ImagesRecViewAdap
         ImageModel image = ImageUtils.getImagesList(this).get(position);
         lastPosition = position;
         intent.putExtra(IMAGE_MODEL, Parcels.wrap(image));
+        intent.putExtra(IMAGE_INDEX, Parcels.wrap(lastPosition));
         pictureEditActivityResultLauncher.launch(intent);
     }
 

@@ -3,9 +3,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.util.Log;
-import androidx.annotation.RequiresApi;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -19,7 +17,6 @@ public class AlarmReceiver extends BroadcastReceiver {
     private int pictureIndex;
     private SharedPreferences mPreferences;
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onReceive(Context context, Intent intent) {
         mPreferences = context.getSharedPreferences(MainActivity.SHARED_PREF_FILE_NAME, MODE_PRIVATE);
@@ -31,7 +28,6 @@ public class AlarmReceiver extends BroadcastReceiver {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void setWallpaper(Context context) {
         if (imagesPathList == null || imagesPathList.length == 0) {
             Log.e(LOG_TAG, "Image list is empty!");
